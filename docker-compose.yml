@@ -4,7 +4,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    hostname: ws-football
-    container_name: ws-football
+    hostname: crawl-tutor-hiring
+    container_name: crawl-tutor-hiring
     ports:
       - '3000:3000'

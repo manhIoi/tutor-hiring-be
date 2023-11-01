@@ -1,8 +1,8 @@
 FROM node:14.18-slim
 
-COPY . /opt/ws-football
+COPY . /opt/crawl-tutor-hiring
 
-WORKDIR /opt/ws-football
+WORKDIR /opt/crawl-tutor-hiring
 
 RUN yarn && \
     yarn install
