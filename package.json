@@ -8,7 +8,8 @@
     "all": "yarn install",
     "dev": "npx nodemon index.ts",
     "lint": "eslint .",
-    "format": "prettier --write \"**/*.js\""
+    "format": "prettier --write \"**/*.js\"",
+    "start": "node index.ts"
   },
   "dependencies": {
     "@types/express": "^4.17.19",
