@@ -4,6 +4,6 @@ COPY . /opt/crawl-tutor-hiring
 
 WORKDIR /opt/crawl-tutor-hiring
 
-RUN yarn install
+RUN npm install
 
-CMD yarn start
+CMD npm start
