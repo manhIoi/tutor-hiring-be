@@ -1,6 +1,7 @@
 import { MongoClient, ServerApiVersion } from "mongodb";
 import express from "express";
 import dotenv from "dotenv";
+import apiRouter from "./router";
 
 dotenv.config();
 const uri = `mongodb+srv://${process.env.USER_NAME}:${process.env.PASSWORD}@cluster0.kpp4ena.mongodb.net/?retryWrites=true&w=majority`;
@@ -28,24 +29,19 @@ export default async () => {
     };
 
     // Connect the client to the server	(optional starting in v4.7)
-    app.use(express.static("public", options));
-    app.get("/", (_, response) =>
-      response
-        .status(200)
-        .json({ data: { errorDesc: "Welcome to tutor hiring service" } }),
-    );
+    app.use(apiRouter);
 
     app.listen(process.env.PORT, () => {
       console.info(`LOGGER:: start listening in port ${process.env.PORT}`);
     });
 
-    await client.connect();
-    // Send a ping to confirm a successful connection
-    await client.db("admin").command({ ping: 1 });
-    console.log(
-      "LOGGER:: Pinged your deployment. You successfully connected to MongoDB!",
-    );
+    // await client.connect();
+    // // Send a ping to confirm a successful connection
+    // await client.db("admin").command({ ping: 1 });
+    // console.log(
+    //   "LOGGER:: Pinged your deployment. You successfully connected to MongoDB!",
+    // );
   } finally {
-    await client.close();
+    // await client.close();
   }
 };

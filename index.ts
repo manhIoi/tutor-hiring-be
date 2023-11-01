@@ -4,7 +4,7 @@ import dotenv from "dotenv";
 
 dotenv.config();
 const main = async () => {
-  // crawlServiceJob();
+  crawlServiceJob();
   mainServiceJob().catch(console.dir);
 };
 
