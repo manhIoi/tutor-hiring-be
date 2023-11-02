@@ -84,6 +84,7 @@ const main = async () => {
     const tutorResult = await getTutorFromMultiPage(page);
     console.info("LOGGER::-tutorResult", tutorResult);
     await browser.close();
+    return tutorResult;
   } catch (e) {
     console.info("LOGGER:: error", e);
   }

@@ -20,12 +20,13 @@
     "express-jwt": "^8.4.1",
     "jsonwebtoken": "^9.0.2",
     "mongodb": "^6.1.0",
+    "mongoose": "^8.0.0",
     "node-cron": "^3.0.2",
     "node-mailer": "^0.1.1",
     "openai": "^4.11.0",
     "passport": "^0.6.0",
     "passport-local": "^1.0.0",
-    "puppeteer": "^21.3.6",
+    "puppeteer": "^21.4.1",
     "ts-node": "^10.9.1"
   },
   "devDependencies": {
@@ -38,9 +39,9 @@
     "eslint": "^8.51.0",
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-prettier": "^5.0.1",
+    "nodemon": "^3.0.1",
     "prettier": "^3.0.3",
-    "typescript": "^5.2.2",
-    "nodemon": "^3.0.1"
+    "typescript": "^5.2.2"
   },
   "keywords": [],
   "author": "",

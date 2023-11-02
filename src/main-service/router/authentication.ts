@@ -9,7 +9,11 @@ class Authentication {
   registerRoutes() {
     // TODO: type in login
     this.router.post("/user/login/teacher", (req, res) => {
-      return res.send("Login success");
+      const userData = {
+        name: "user1",
+        age: 20,
+      };
+      return res.send({ token: new Date().getTime().toString(), ...userData });
     });
   }
 }

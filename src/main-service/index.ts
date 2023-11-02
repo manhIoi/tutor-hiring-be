@@ -2,32 +2,18 @@ import { MongoClient, ServerApiVersion } from "mongodb";
 import express from "express";
 import dotenv from "dotenv";
 import apiRouter from "./router";
+import mongoose from "mongoose";
+import UserModel from "./model/user.model";
+import User from "./model/user.model";
+import crawTutor from "../crawl-service/tutor";
+import Tutor from "./model/tutor.model";
 
 dotenv.config();
 const uri = `mongodb+srv://${process.env.USER_NAME}:${process.env.PASSWORD}@cluster0.kpp4ena.mongodb.net/?retryWrites=true&w=majority`;
-const client = new MongoClient(uri, {
-  serverApi: {
-    version: ServerApiVersion.v1,
-    strict: true,
-    deprecationErrors: true,
-  },
-});
 
 export default async () => {
   try {
     const app = express();
-    const options = {
-      dotfiles: "ignore",
-      etag: false,
-      extensions: ["htm", "html"],
-      index: false,
-      maxAge: "1d",
-      redirect: false,
-      setHeaders(res, path, stat) {
-        res.set("x-timestamp", Date.now());
-      },
-    };
-
     // Connect the client to the server	(optional starting in v4.7)
     app.use(apiRouter);
 
@@ -35,13 +21,7 @@ export default async () => {
       console.info(`LOGGER:: start listening in port ${process.env.PORT}`);
     });
 
-    // await client.connect();
-    // // Send a ping to confirm a successful connection
-    // await client.db("admin").command({ ping: 1 });
-    // console.log(
-    //   "LOGGER:: Pinged your deployment. You successfully connected to MongoDB!",
-    // );
+    const connection = await mongoose.connect(uri);
   } finally {
-    // await client.close();
   }
 };
