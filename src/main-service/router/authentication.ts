@@ -1,4 +1,5 @@
 import { IRouter } from "express";
+import UserDataSource from "../datasource/userDataSource";
 
 class Authentication {
   router: IRouter;
@@ -8,7 +9,20 @@ class Authentication {
   }
   registerRoutes() {
     // TODO: type in login
-    this.router.post("/user/login/teacher", (req, res) => {
+    this.login();
+    this.register();
+  }
+
+  login() {
+    this.router.post("/user/login", async (req, res) => {
+      const { phone } = req.body;
+      const user = await UserDataSource.getUserByPhone(phone);
+      return res.send({ token: new Date().getTime().toString(), user });
+    });
+  }
+
+  register() {
+    this.router.post("/user/register", (req, res) => {
       const userData = {
         name: "user1",
         age: 20,

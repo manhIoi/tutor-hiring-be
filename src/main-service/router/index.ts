@@ -1,10 +1,10 @@
 import express from "express";
 import Authentication from "./authentication";
-import TutorRouter from "./tutorRouter";
+import UserRouter from "./userRouter";
 
 const apiRouter = express.Router();
 
 new Authentication(apiRouter);
-new TutorRouter(apiRouter);
+new UserRouter(apiRouter);
 
 export default apiRouter;
