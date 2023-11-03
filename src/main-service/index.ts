@@ -19,7 +19,7 @@ export default async () => {
       console.info(`LOGGER:: start listening in port ${process.env.PORT}`);
     });
     await mongoose.connect(uri);
-    // await crawlData();
+    await crawlData();
   } finally {
   }
 };

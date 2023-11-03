@@ -1,7 +1,9 @@
 import mongoose from "mongoose";
 const { Schema } = mongoose;
 
-const subjectSchema = new Schema({ name: String });
+const userMetaDataSchema = new Schema({
+  description: String,
+});
 
 const userSchema = new Schema({
   fullName: String,
@@ -12,7 +14,9 @@ const userSchema = new Schema({
     type: String,
     enum: ["teacher", "student"],
   },
-  subjects: [subjectSchema],
+  subjects: [{ type: Schema.Types.ObjectId, ref: "Subject" }],
+  metaData: userMetaDataSchema,
+  address: String,
 });
 
 const User = mongoose.model("User", userSchema);
