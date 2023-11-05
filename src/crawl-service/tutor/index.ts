@@ -9,6 +9,10 @@ interface ITutor {
   school: string;
   specialized: string;
   graduationYear: string;
+  address: string;
+  metaData: {
+    description: string;
+  };
 }
 
 async function nextPage(page: Page) {
@@ -50,6 +54,14 @@ async function getTutorFromCurrentPage(page: Page) {
             specialized,
             graduationYear,
             classes,
+            address: e
+              .querySelectorAll(".gs5th")[1]
+              .textContent.replace("Khu vực: ", ""),
+            metaData: {
+              description: e
+                .querySelector(".gs9")
+                .textContent.replace("Thông tin khác:", ""),
+            },
           };
         });
       },
