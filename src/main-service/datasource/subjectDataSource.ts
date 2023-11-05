@@ -1,4 +1,3 @@
-import subject from "../model/subject.model";
 import Subject from "../model/subject.model";
 
 class SubjectDataSource {
@@ -12,7 +11,7 @@ class SubjectDataSource {
 
   deleteSubject(id) {
     // TODO: implement;
-    return Subject.insertMany([subject]);
+    // return Subject.insertMany([subject]);
   }
 }
 

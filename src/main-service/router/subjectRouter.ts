@@ -17,7 +17,7 @@ class SubjectRouter {
   }
 
   private getAllSubject() {
-    this.router.get("subject/all", async (req, res) => {
+    this.router.get("/subject/all", async (req, res) => {
       const subjects = await SubjectDataSource.getAll();
       if (!subjects) {
         return res
@@ -29,7 +29,7 @@ class SubjectRouter {
   }
 
   private insertSubject() {
-    this.router.post("subject/add", async (req, res) => {
+    this.router.post("/subject/add", async (req, res) => {
       const { subject } = req.body;
       const newSubject = await SubjectDataSource.insertSubject(subject);
       return res.send(newSubject);
@@ -37,13 +37,14 @@ class SubjectRouter {
   }
 
   private deleteSubjectById() {
-    this.router.post("subject/delete/:id", async (req, res) => {
+    this.router.post("/subject/delete/:id", async (req, res) => {
+      // TODO: implement
       const { id } = req.params;
-      const status = await SubjectDataSource.deleteSubject(id);
-      if (!status) {
-        return res.status(201).json({ error: "Delete fail" });
-      }
-      return res.send(status);
+      // const status = await SubjectDataSource.deleteSubject(id);
+      // if (!status) {
+      //   return res.status(201).json({ error: "Delete fail" });
+      // }
+      return res.send(null);
     });
   }
 }
