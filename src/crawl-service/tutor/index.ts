@@ -1,4 +1,6 @@
-import puppeteer, { Page } from "puppeteer";
+import puppeteer, { Browser, Page } from "puppeteer";
+import SubjectModel from "../../main-service/model/subject.model";
+import User from "../../main-service/model/user.model";
 
 interface ITutor {
   id: string;
@@ -86,20 +88,91 @@ async function getTutorFromMultiPage(page: Page) {
   return tutorResult;
 }
 
-const main = async () => {
-  try {
-    const browser = await puppeteer.launch({
-      headless: false,
+async function getTutorSinglePage1(page: Page) {
+  const tutorSelector = ".teacher-item";
+  const hrefTutors = await page.$$eval(tutorSelector, (elements) => {
+    return elements.map((e) => {
+      return e.querySelector(".titleTeacher").getAttribute("href");
     });
-    const page = await browser.newPage();
-    await page.goto(process.env.CRAWL_ENDPOINT);
-    const tutorResult = await getTutorFromMultiPage(page);
-    console.info("LOGGER::-tutorResult", tutorResult);
-    await browser.close();
-    return tutorResult;
-  } catch (e) {
-    console.info("LOGGER:: error", e);
+  });
+  const list = hrefTutors.map((i) => {
+    return async () => {
+      await page.goto(`https://www.daykemtainha.vn${i}`);
+      const teacherProfile = await page.$eval(".teacher-prolile-01", (e) => {
+        const extraData = e.querySelectorAll(".profile__courses__right > li");
+        return {
+          avatar: e.querySelector(".teacher-contact > img").getAttribute("src"),
+          name: e.querySelector(".teacher-contact > img").getAttribute("alt"),
+          dateOfBirth: extraData[0].textContent,
+          position: extraData[1].textContent,
+          address: extraData[2].textContent,
+          subjects: extraData[3].textContent.split(", "),
+          metaData: {
+            description: e.querySelector(".all-courses > p").textContent,
+          },
+        };
+      });
+      // console.info("LOGGER:: ", teacherProfile);
+      await page.goBack();
+      return teacherProfile;
+    };
+  });
+  const tutorList = [];
+  for (const promise of list) {
+    const value = await promise();
+    tutorList.push(value);
   }
+  const subjectArr = await SubjectModel.find({});
+  const subjectHash = subjectArr.reduce((current, item, index) => {
+    return {
+      ...current,
+      [item.name]: item,
+    };
+  }, {});
+  console.info("LOGGER:: subjectHash", subjectHash);
+  const tutorListFormatted = tutorList.map((tutor) => ({
+    avatar: tutor.avatar,
+    fullName: tutor.name,
+    dob: tutor.dateOfBirth,
+    phone: Math.floor(100000000 + Math.random() * 900000000).toString(),
+    role: "teacher",
+    address: tutor.address,
+    metaData: tutor.metaData,
+    subjects: tutor.subjects.map((s) => subjectHash[s]._id),
+    position: tutor.position,
+  }));
+  const status = await User.insertMany(tutorListFormatted);
+  console.info("LOGGER:: status", status);
+}
+
+const main = async () => {
+  // try {
+  //   const browser = await puppeteer.launch({
+  //     headless: false,
+  //   });
+  //   const page = await browser.newPage();
+  //   await page.goto(process.env.CRAWL_ENDPOINT);
+  //   const tutorResult = await getTutorFromMultiPage(page);
+  //   console.info("LOGGER::-tutorResult", tutorResult);
+  //   await browser.close();
+  //   return tutorResult;
+  // } catch (e) {
+  //   console.info("LOGGER:: error", e);
+  // }
+  // try {
+  //   const browser = await puppeteer.launch({
+  //     headless: false,
+  //   });
+  //   const page = await browser.newPage();
+  //
+  //   const numOfPage = 10;
+  //   for (let i = 0; i < numOfPage; i++) {
+  //     await page.goto(`https://www.daykemtainha.vn/gia-su?page=${i + 1}`);
+  //     await getTutorSinglePage1(page);
+  //   }
+  // } catch (e) {
+  //   console.info("LOGGER:: error", e);
+  // }
 };
 
 export default main;

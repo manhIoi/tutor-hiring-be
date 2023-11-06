@@ -31,7 +31,7 @@ async function crawlData() {
   // const subjects = await crawlSubject();
   // const result = await SubjectModel.insertMany(subjects);
   // console.info("LOGGER:: ", result);
-  // const rawData = await crawlTutor();
+  const rawData = await crawlTutor();
   // const formattedData = rawData.map((item) => ({
   //   fullName: item.name,
   //   phone: Math.floor(100000000 + Math.random() * 900000000).toString(),

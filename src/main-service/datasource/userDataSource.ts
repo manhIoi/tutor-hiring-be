@@ -3,18 +3,18 @@ import { ObjectId } from "mongodb";
 
 class UserDataSource {
   getAllListUser() {
-    return User.find({});
+    return User.find({}).populate("subjects");
   }
   getSuggestUserByRole(role: String) {
-    return User.find({ role });
+    return User.find({ role }).populate("subjects");
   }
 
   getUserByPhone(phone: String) {
-    return User.findOne({ phone });
+    return User.findOne({ phone }).populate("subjects");
   }
 
   getUserById(id) {
-    return User.findOne({ _id: id });
+    return User.findOne({ _id: id }).populate("subjects");
   }
 }
 

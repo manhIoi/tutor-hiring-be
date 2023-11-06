@@ -17,6 +17,10 @@ const userSchema = new Schema({
   subjects: [{ type: Schema.Types.ObjectId, ref: "Subject" }],
   metaData: userMetaDataSchema,
   address: String,
+  position: {
+    type: String,
+    default: null,
+  },
 });
 
 const User = mongoose.model("User", userSchema);
