@@ -47,10 +47,6 @@ class TutorRequestRouter {
     this.router.post("/tutor-request/add", async (req, res) => {
       const tutorRequest = req.body;
       console.info("LOGGER:: tutorRequest", tutorRequest);
-      // TODO: implement
-      tutorRequest.timeStartAt = new Date();
-      tutorRequest.timeEndAt = new Date();
-      tutorRequest.startAt = new Date();
       if (!tutorRequest) {
         return res.send(ErrorCode.BAD_REQUEST);
       }
@@ -67,10 +63,6 @@ class TutorRequestRouter {
     this.router.post("/tutor-request/add/:id", async (req, res) => {
       const { id } = req.params;
       const tutorRequest = req.body;
-      // TODO: implement
-      tutorRequest.timeStartAt = new Date();
-      tutorRequest.timeEndAt = new Date();
-      tutorRequest.startAt = new Date();
       const currentTeacher =
         await this.dataSource.userDataSource.getUserById(id);
       if (!currentTeacher) {
