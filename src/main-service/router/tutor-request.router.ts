@@ -70,7 +70,9 @@ class TutorRequestRouter {
           .status(ERROR_CODE.NOT_FOUND)
           .json({ error: "Not founded teacher" });
       }
-      tutorRequest.teacher = id;
+      tutorRequest.teacher = {
+        _id: id,
+      };
       const status =
         await this.dataSource.tutorRequestDataSource.insertTutorRequest(
           tutorRequest,

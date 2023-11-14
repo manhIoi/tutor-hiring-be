@@ -14,6 +14,14 @@ const tutorRequestSchema = new Schema({
     type: Date,
     default: new Date(),
   },
+  timeStart: {
+    type: Date,
+    default: new Date(),
+  },
+  status: {
+    type: Number,
+    default: 0,
+  },
   timeline: Number, //
   weekDays: [Number], // range of monday to sunday
   price: Number, // price 1 day
