@@ -24,6 +24,7 @@ class TutorRequestRouter {
     this.getTutorRequestByUser();
     this.insertTutorRequest();
     this.insertTutorRequestWithTutor();
+    this.getTutorRequestDetail();
   }
 
   private getAllTutorRequest() {
@@ -78,6 +79,20 @@ class TutorRequestRouter {
           tutorRequest,
         );
       return res.send(status);
+    });
+  }
+
+  private getTutorRequestDetail() {
+    this.router.get("/tutor-request/detail/:id", async (req, res) => {
+      const { id } = req.params;
+      const tutorRequest =
+        await this.dataSource.tutorRequestDataSource.getById(id);
+      if (!tutorRequest) {
+        return res
+          .status(ERROR_CODE.NOT_FOUND)
+          .json({ error: "Not founded teacher" });
+      }
+      return res.send(tutorRequest);
     });
   }
 }

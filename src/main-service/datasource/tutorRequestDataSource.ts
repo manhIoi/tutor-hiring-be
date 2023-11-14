@@ -8,6 +8,13 @@ class TutorRequestDataSource {
       .populate("teacher");
   }
 
+  getById(id) {
+    return TutorRequest.find({ _id: id })
+      .populate("subjects")
+      .populate("user")
+      .populate("teacher");
+  }
+
   getByUserId(id) {
     return TutorRequest.find({ user: id })
       .populate("subjects")
