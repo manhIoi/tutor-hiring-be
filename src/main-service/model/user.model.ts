@@ -15,6 +15,7 @@ const userSchema = new Schema({
     enum: ["teacher", "student"],
   },
   subjects: [{ type: Schema.Types.ObjectId, ref: "Subject" }],
+  votes: [{ type: Schema.Types.ObjectId, ref: "Vote" }],
   metaData: userMetaDataSchema,
   address: String,
   position: {

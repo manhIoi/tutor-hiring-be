@@ -26,6 +26,10 @@ class TutorRequestDataSource {
     return TutorRequest.insertMany([tutoRequest]);
   }
 
+  findAndUpdateTutorRequest(filter, newData) {
+    return TutorRequest.findOneAndUpdate(filter, newData, { new: true });
+  }
+
   deleteTutorRequest(id) {
     // TODO: implement;
   }
