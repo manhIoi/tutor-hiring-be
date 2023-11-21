@@ -8,6 +8,7 @@ const userMetaDataSchema = new Schema({
 const userSchema = new Schema({
   fullName: String,
   phone: String,
+  password: String,
   dob: String,
   avatar: String,
   role: {

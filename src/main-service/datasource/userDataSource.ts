@@ -16,6 +16,10 @@ class UserDataSource {
   getUserById(id) {
     return User.findOne({ _id: id }).populate("subjects");
   }
+
+  insertUser(user) {
+    return User.insertMany([user]);
+  }
 }
 
 export default UserDataSource;
