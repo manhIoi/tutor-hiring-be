@@ -4,7 +4,7 @@ import apiRouter from "./router";
 import mongoose from "mongoose";
 import crawlTutor from "../crawl-service/tutor";
 import * as http from "http";
-import { Server } from "socket.io";
+import { chatSocket } from "./socket";
 
 dotenv.config();
 const uri = `mongodb+srv://${process.env.USER_NAME}:${process.env.PASSWORD}@cluster0.kpp4ena.mongodb.net/?retryWrites=true&w=majority`;
@@ -20,38 +20,14 @@ export default async () => {
       console.info(`LOGGER:: start listening in port ${process.env.PORT}`);
     });
 
-    let users = [];
+    // socket service init
 
-    const io = new Server(server);
-    io.on("connection", (socket) => {
-      console.info(`🔥🔥🔥LOGGER:: `);
-      socket.on("message", (data) => {
-        console.info("🔥LOGGER:: data ", data);
-        io.emit("messageResponse", data);
-      });
+    chatSocket.initSocket();
 
-      //Listens when a new user joins the server
-      socket.on("newUser", (data) => {
-        users.push(data);
-        io.emit("newUserResponse", users);
-      });
-
-      socket.on("typing", (data) =>
-        socket.broadcast.emit("typingResponse", data),
-      );
-
-      socket.on("disconnect", () => {
-        console.log("🔥: A user disconnected");
-        //Updates the list of users when a user disconnects from the server
-        users = users.filter((user) => user.socketID !== socket.id);
-        // console.log(users);
-        //Sends the list of users to the client
-        io.emit("newUserResponse", users);
-        socket.disconnect();
-      });
-    });
     await mongoose.connect(uri);
     await crawlData();
+  } catch (e) {
+    console.info(`🔥LOGGER:: e`, e);
   } finally {
   }
 };

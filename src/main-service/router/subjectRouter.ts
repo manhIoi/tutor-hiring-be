@@ -2,11 +2,17 @@ import { IRouter } from "express";
 import SubjectDataSource from "../datasource/subjectDataSource";
 import ERROR_CODE from "../constant/errorCode";
 
+type IDataSource = {
+  subjectDataSource: SubjectDataSource;
+};
+
 class SubjectRouter {
   router: IRouter;
-  constructor(router: IRouter) {
+  dataSource: IDataSource;
+  constructor(router: IRouter, dataSource) {
     this.router = router;
     this.registerRoutes();
+    this.dataSource = dataSource;
   }
 
   registerRoutes() {
@@ -18,7 +24,7 @@ class SubjectRouter {
 
   private getAllSubject() {
     this.router.get("/subject/all", async (req, res) => {
-      const subjects = await SubjectDataSource.getAll();
+      const subjects = await this.dataSource.subjectDataSource.getAll();
       if (!subjects) {
         return res
           .status(ERROR_CODE.NOT_FOUND)
@@ -31,7 +37,8 @@ class SubjectRouter {
   private insertSubject() {
     this.router.post("/subject/add", async (req, res) => {
       const { subject } = req.body;
-      const newSubject = await SubjectDataSource.insertSubject(subject);
+      const newSubject =
+        await this.dataSource.subjectDataSource.insertSubject(subject);
       return res.send(newSubject);
     });
   }

@@ -22,6 +22,7 @@ class Authentication {
     // TODO: type in login
     this.login();
     this.register();
+    this.forgotPassword()
   }
 
   login() {
@@ -35,15 +36,23 @@ class Authentication {
           .status(ERROR_CODE.NOT_FOUND)
           .json({ error: "Không tìm thấy người dùng. Vui lòng kiểm tra lại" });
       }
-      const isCorrectPassword = await comparePassword(password, user.password);
-      if (!isCorrectPassword) {
+      const isCorrectPassword = await comparePassword(password, user?.password);
+      if (!isCorrectPassword && user?.password) {
         return res
           .status(ERROR_CODE.BAD_REQUEST)
           .json({ error: "Mật khẩu không đúng. Vui lòng thử lại !" });
       }
+      const [chatBot] = await this.dataSource.userDataSource.getChatBotByUser(
+        user._id,
+      );
       return res.send({
         token: jwt.sign({ phone: user.phone, _id: user._id }, "key").toString(),
         user,
+        chatBot: isEmpty(chatBot)
+          ? await this.dataSource.userDataSource.insertChatBot({
+              user: user?._id,
+            })
+          : chatBot,
       });
     });
   }
@@ -66,7 +75,10 @@ class Authentication {
         console.info("LOGGER:: userData", userData);
         const [newUser] =
           await this.dataSource.userDataSource.insertUser(userData);
-        console.info("LOGGER:: newUser", newUser);
+        const [newChatBot] = await this.dataSource.userDataSource.insertChatBot(
+          { user: newUser?._id },
+        );
+        console.info("LOGGER:: newUser", newUser, newChatBot);
         if (!newUser) {
           return res
             .json(ERROR_CODE.BAD_REQUEST)
@@ -77,9 +89,20 @@ class Authentication {
             .sign({ phone: newUser?.phone, _id: newUser?._id }, "key")
             .toString(),
           user: newUser,
+          chatBot: newChatBot,
         });
       },
     );
+  }
+
+  forgotPassword() {
+      this.router.post('/user/forgot-password/:id', async (req, res) => {
+          const currentUser = await this.dataSource.userDataSource.getUserById(req.params.id);
+          if (!currentUser) {
+              return res.status(ERROR_CODE.NOT_FOUND).json({ error: "User not found" })
+          }
+
+      })
   }
 }
 

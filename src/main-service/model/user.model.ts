@@ -8,12 +8,16 @@ const userMetaDataSchema = new Schema({
 const userSchema = new Schema({
   fullName: String,
   phone: String,
-  password: String,
+  password: {
+    type: String,
+    default: "",
+  },
   dob: String,
   avatar: String,
   role: {
     type: String,
     enum: ["teacher", "student"],
+    default: "student",
   },
   subjects: [{ type: Schema.Types.ObjectId, ref: "Subject" }],
   votes: [{ type: Schema.Types.ObjectId, ref: "Vote" }],

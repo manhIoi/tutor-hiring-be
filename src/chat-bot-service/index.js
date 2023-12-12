@@ -6,9 +6,6 @@ const dotenv = require("dotenv");
 const main = async () => {
   try {
     dotenv.config();
-    const openai = new OpenAI({
-      apiKey: process.env.GPT_API_KEY,
-    });
 
     while (true) {
       const userInput = readlineSync.question(colors.yellow("You: "));

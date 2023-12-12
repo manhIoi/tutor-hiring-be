@@ -1,6 +1,12 @@
 import mongoose from "mongoose";
 const { Schema } = mongoose;
 
+export enum EStatusRequest {
+  OPEN = 0,
+  TEACHER_APPROVAL = 1,
+  CLOSE = 2,
+}
+
 const tutorRequestSchema = new Schema({
   title: String,
   description: String,
@@ -20,7 +26,7 @@ const tutorRequestSchema = new Schema({
   },
   status: {
     type: Number,
-    default: 0,
+    default: EStatusRequest.OPEN,
   },
   timeline: Number, //
   weekDays: [Number], // range of monday to sunday
@@ -31,6 +37,8 @@ const tutorRequestSchema = new Schema({
   subjects: [{ type: Schema.Types.ObjectId, ref: "Subject" }],
   user: { type: Schema.Types.ObjectId, ref: "User", required: true }, // user created
   teacher: { type: Schema.Types.ObjectId, ref: "User" }, // teacher owner class
+  students: [{ type: Schema.Types.ObjectId, ref: "User" }],
+  isTeacherApproved: { type: Boolean, default: false },
 });
 
 const TutorRequest = mongoose.model("TutorRequest", tutorRequestSchema);

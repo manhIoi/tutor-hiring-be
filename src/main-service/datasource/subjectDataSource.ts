@@ -15,4 +15,4 @@ class SubjectDataSource {
   }
 }
 
-export default new SubjectDataSource();
+export default SubjectDataSource;

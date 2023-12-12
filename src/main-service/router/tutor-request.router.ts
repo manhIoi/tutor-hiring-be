@@ -26,12 +26,37 @@ class TutorRequestRouter {
     this.insertTutorRequestWithTutor();
     this.getTutorRequestDetail();
     this.updateTutorRequestDetail();
+    this.getTutorRequestAvailable();
+    this.getTutorRequestByTeacher();
   }
 
   private getAllTutorRequest() {
     this.router.get("/tutor-request/all", async (req, res) => {
       const tutorRequests =
         await this.dataSource.tutorRequestDataSource.getAll();
+      console.info(`🔥LOGGER:: tutorRequests`, tutorRequests);
+      return res.send(tutorRequests);
+    });
+  }
+
+  private getTutorRequestAvailable() {
+    this.router.get("/tutor-request/available/:id", async (req, res) => {
+      console.info(`🔥LOGGER:: req.params.id `, req.params.id);
+      const currentUser = await this.dataSource.userDataSource.getUserById(
+        req.params.id,
+      );
+      console.info(`🔥LOGGER:: currentUser `, currentUser);
+      if (currentUser.role === "teacher") {
+        const tutorRequests =
+          await this.dataSource.tutorRequestDataSource.getAvailableByTeacherId(
+            currentUser._id,
+          );
+        return res.send(tutorRequests);
+      }
+      const tutorRequests =
+        await this.dataSource.tutorRequestDataSource.getAvailableByStudentId(
+          currentUser._id,
+        );
       return res.send(tutorRequests);
     });
   }
@@ -41,6 +66,15 @@ class TutorRequestRouter {
       const { id } = req.params;
       const tutorRequests =
         await this.dataSource.tutorRequestDataSource.getByUserId(id);
+      return res.send(tutorRequests);
+    });
+  }
+
+  private getTutorRequestByTeacher() {
+    this.router.get("/tutor-request/teacher/:id", async (req, res) => {
+      const { id } = req.params;
+      const tutorRequests =
+        await this.dataSource.tutorRequestDataSource.getByTeacherId(id);
       return res.send(tutorRequests);
     });
   }
@@ -63,23 +97,29 @@ class TutorRequestRouter {
 
   private insertTutorRequestWithTutor() {
     this.router.post("/tutor-request/add/:id", async (req, res) => {
-      const { id } = req.params;
-      const tutorRequest = req.body;
-      const currentTeacher =
-        await this.dataSource.userDataSource.getUserById(id);
-      if (!currentTeacher) {
-        return res
-          .status(ERROR_CODE.NOT_FOUND)
-          .json({ error: "Not founded teacher" });
+      try {
+        const { id } = req.params;
+        const tutorRequest = req.body;
+        const currentTeacher =
+          await this.dataSource.userDataSource.getUserById(id);
+
+        console.info(`🔥LOGGER:: currentTeacher`, currentTeacher);
+        if (!currentTeacher) {
+          return res
+            .status(ERROR_CODE.NOT_FOUND)
+            .json({ error: "Not founded teacher" });
+        }
+        tutorRequest.teacher = {
+          _id: id,
+        };
+        const status =
+          await this.dataSource.tutorRequestDataSource.insertTutorRequest(
+            tutorRequest,
+          );
+        return res.send(status);
+      } catch (e) {
+        console.info(`🔥LOGGER:: error insertTutorRequestWithTutor`, e);
       }
-      tutorRequest.teacher = {
-        _id: id,
-      };
-      const status =
-        await this.dataSource.tutorRequestDataSource.insertTutorRequest(
-          tutorRequest,
-        );
-      return res.send(status);
     });
   }
 

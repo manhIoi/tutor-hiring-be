@@ -1,5 +1,6 @@
 import User from "../model/user.model";
 import { ObjectId } from "mongodb";
+import ChatBot from "../model/chat-bot.model";
 
 class UserDataSource {
   getAllListUser() {
@@ -19,6 +20,14 @@ class UserDataSource {
 
   insertUser(user) {
     return User.insertMany([user]);
+  }
+
+  getChatBotByUser(id) {
+    return ChatBot.find({ user: id });
+  }
+
+  insertChatBot(chatBot) {
+    return ChatBot.insertMany([chatBot]);
   }
 }
 
