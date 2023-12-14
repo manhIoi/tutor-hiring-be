@@ -10,6 +10,7 @@ import ChatDataSource from "../datasource/chatDataSource";
 import SubjectDataSource from "../datasource/subjectDataSource";
 import RoomChatRouter from "./room-chat.router";
 import RoomChatDataSource from "../datasource/roomChatDataSource";
+import UploadRouter from "./upload.router";
 
 const apiRouter = express.Router();
 
@@ -22,6 +23,7 @@ new UserRouter(apiRouter, {
 new TutorRequestRouter(apiRouter, {
   userDataSource: new UserDataSource(),
   tutorRequestDataSource: new TutorRequestDataSource(),
+  subjectDataSource: new SubjectDataSource(),
 });
 new SubjectRouter(apiRouter, {
   subjectDataSource: new SubjectDataSource(),
@@ -34,4 +36,5 @@ new RoomChatRouter(apiRouter, {
   roomChatDataSource: new RoomChatDataSource(),
 });
 
+new UploadRouter(apiRouter, {});
 export default apiRouter;

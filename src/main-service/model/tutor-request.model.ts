@@ -1,10 +1,10 @@
 import mongoose from "mongoose";
+import { randomDate } from "../utils/date.util";
 const { Schema } = mongoose;
 
 export enum EStatusRequest {
   OPEN = 0,
   TEACHER_APPROVAL = 1,
-  CLOSE = 2,
 }
 
 const tutorRequestSchema = new Schema({
@@ -39,6 +39,10 @@ const tutorRequestSchema = new Schema({
   teacher: { type: Schema.Types.ObjectId, ref: "User" }, // teacher owner class
   students: [{ type: Schema.Types.ObjectId, ref: "User" }],
   isTeacherApproved: { type: Boolean, default: false },
+  createdAt: {
+    type: Date,
+    default: randomDate(new Date(2023, 1, 1), new Date()),
+  },
 });
 
 const TutorRequest = mongoose.model("TutorRequest", tutorRequestSchema);

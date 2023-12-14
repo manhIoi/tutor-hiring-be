@@ -22,8 +22,9 @@ class TutorRequestDataSource {
 
   getAvailableByStudentId(id) {
     return TutorRequest.find({
-      status: EStatusRequest.OPEN,
-      user: id,
+      user: {
+        $ne: id,
+      },
     })
       .populate("subjects")
       .populate("user")
@@ -38,14 +39,21 @@ class TutorRequestDataSource {
   }
 
   getByUserId(id) {
-    return TutorRequest.find({ user: id })
+    return TutorRequest.find({
+      $or: [{ user: id }, { students: id }],
+    })
       .populate("subjects")
       .populate("user")
-      .populate("teacher");
+      .populate("teacher")
+      .populate("students");
   }
 
   insertTutorRequest(tutoRequest) {
     return TutorRequest.insertMany([tutoRequest]);
+  }
+
+  insertListTutorRequest(list) {
+    return TutorRequest.insertMany(list);
   }
 
   findAndUpdateTutorRequest(filter, newData) {

@@ -1,10 +1,9 @@
 import User from "../model/user.model";
-import { ObjectId } from "mongodb";
 import ChatBot from "../model/chat-bot.model";
 
 class UserDataSource {
   getAllListUser() {
-    return User.find({}).populate("subjects");
+    return User.find({}).populate("subjects").select("-password");
   }
   getSuggestUserByRole(role: String) {
     return User.find({ role }).populate("subjects");
@@ -28,6 +27,10 @@ class UserDataSource {
 
   insertChatBot(chatBot) {
     return ChatBot.insertMany([chatBot]);
+  }
+
+  updateUser(filter, newData) {
+    return User.findOneAndUpdate(filter, newData, { new: true });
   }
 }
 

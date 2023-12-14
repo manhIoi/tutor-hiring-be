@@ -3,10 +3,15 @@ import TutorRequestDataSource from "../datasource/tutorRequestDataSource";
 import ErrorCode from "../constant/errorCode";
 import UserDataSource from "../datasource/userDataSource";
 import ERROR_CODE from "../constant/errorCode";
+import { faker } from "@faker-js/faker";
+import { randomDate } from "../utils/date.util";
+import { EStatusRequest } from "../model/tutor-request.model";
+import SubjectDataSource from "../datasource/subjectDataSource";
 
 type IDataSource = {
   userDataSource: UserDataSource;
   tutorRequestDataSource: TutorRequestDataSource;
+  subjectDataSource: SubjectDataSource;
 };
 
 class TutorRequestRouter {
@@ -28,6 +33,7 @@ class TutorRequestRouter {
     this.updateTutorRequestDetail();
     this.getTutorRequestAvailable();
     this.getTutorRequestByTeacher();
+    this.insertRandomTutorRequest();
   }
 
   private getAllTutorRequest() {
@@ -151,6 +157,98 @@ class TutorRequestRouter {
         );
       return res.send(status);
     });
+  }
+
+  private insertRandomTutorRequest() {
+    this.router.post(
+      "/tutor-request/random/:numberRandom",
+      async (req, res) => {
+        try {
+          const allUser = await this.dataSource.userDataSource.getAllListUser();
+          const allUserId = allUser?.map((item) => ({ _id: item?._id }));
+          const allStudentId = allUser
+            ?.filter((item) => item?.role === "student")
+            ?.map?.((item) => ({ _id: item?._id }));
+          const allTeacherId = allUser
+            ?.filter((item) => item?.role === "teacher")
+            ?.map?.((item) => ({ _id: item?._id }));
+          const allSubject = await this.dataSource.subjectDataSource.getAll();
+          const allSubjectId = allSubject?.map((item) => ({ _id: item?._id }));
+          const { numberRandom } = req.params;
+          const result = [];
+          for (let i = 0; i < parseInt(numberRandom); i++) {
+            const mockData = {
+              title: faker.lorem.words({ min: 3, max: 7 }),
+              price: faker.number.int({ min: 1000000, max: 3000000 }),
+              description: faker.lorem.paragraph(2),
+              content: faker.lorem.lines(3),
+              address: faker.location.streetAddress(true),
+              startAt: randomDate(new Date(), new Date(2023, 12, 31)),
+              endAt: randomDate(new Date(2024, 4, 1), new Date(2024, 6, 31)),
+              status: faker.number.int({ min: 0, max: 1 }),
+              timeLine: faker.number.int({ min: 1, max: 3 }),
+              weekDays: faker.helpers.rangeToNumber({ min: 1, max: 7 }), // 5
+              isOnline: faker.datatype.boolean(),
+              numOfStudents: faker.number.int({ min: 1, max: 30 }),
+              contact: faker.phone.number("0#########"),
+              createdAt: new Date(),
+              subjects: faker.helpers.arrayElements(
+                allSubjectId,
+                faker.number.int({ min: 1, max: 3 }),
+              ),
+              user: faker.helpers.arrayElement(allStudentId),
+              teacher: faker.helpers.arrayElement(allTeacherId),
+            };
+            const shouldHasTeacher = mockData.status !== 0;
+            !shouldHasTeacher && delete mockData["teacher"];
+            result.push(mockData);
+          }
+
+          const resultImport =
+            await this.dataSource.tutorRequestDataSource.insertListTutorRequest(
+              result,
+            );
+
+          return res.send(resultImport);
+
+          //     title: String,
+          //     description: String,
+          //     content: String,
+          //     address: String,
+          //     startAt: {
+          //   type: Date,
+          // default: new Date(),
+          // },
+          // endAt: {
+          //   type: Date,
+          // default: new Date(),
+          // },
+          // timeStart: {
+          //   type: Date,
+          // default: new Date(),
+          // },
+          // status: {
+          //   type: Number,
+          // default: EStatusRequest.OPEN,
+          // },
+          // timeline: Number, //
+          //     weekDays: [Number], // range of monday to sunday
+          //     price: Number, // price 1 day
+          //     isOnline: Boolean,
+          //     numOfStudents: Number,
+          //     contact: String,
+          //     subjects: [{ type: Schema.Types.ObjectId, ref: "Subject" }],
+          //     user: { type: Schema.Types.ObjectId, ref: "User", required: true }, // user created
+          // teacher: { type: Schema.Types.ObjectId, ref: "User" }, // teacher owner class
+          // students: [{ type: Schema.Types.ObjectId, ref: "User" }],
+          //     isTeacherApproved: { type: Boolean, default: false },
+          // createdAt: {
+          //   type: Date,
+          // default: randomDate(new Date(2023, 1, 1), new Date()),
+          // },
+        } catch (e) {}
+      },
+    );
   }
 }
 

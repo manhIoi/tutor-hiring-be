@@ -5,6 +5,7 @@ import mongoose from "mongoose";
 import crawlTutor from "../crawl-service/tutor";
 import * as http from "http";
 import { chatSocket } from "./socket";
+import cors from "cors";
 
 dotenv.config();
 const uri = `mongodb+srv://${process.env.USER_NAME}:${process.env.PASSWORD}@cluster0.kpp4ena.mongodb.net/?retryWrites=true&w=majority`;
@@ -14,6 +15,7 @@ export default async () => {
     const app = express();
     const server = http.createServer(app);
 
+    app.use(cors());
     app.use(express.json());
     app.use(apiRouter);
     server.listen(process.env.PORT, () => {
