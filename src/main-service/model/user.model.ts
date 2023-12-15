@@ -1,8 +1,15 @@
 import mongoose from "mongoose";
+import { Role } from "../../common/model/User";
 const { Schema } = mongoose;
 
 const userMetaDataSchema = new Schema({
   description: String,
+  gender: {
+    type: Number,
+    enum: [0, 1],
+  },
+  email: String,
+  university: String,
 });
 
 const userSchema = new Schema({
@@ -16,8 +23,8 @@ const userSchema = new Schema({
   avatar: String,
   role: {
     type: String,
-    enum: ["teacher", "student"],
-    default: "student",
+    enum: Object.keys(Role),
+    default: Role.STUDENT,
   },
   subjects: [{ type: Schema.Types.ObjectId, ref: "Subject" }],
   votes: [{ type: Schema.Types.ObjectId, ref: "Vote" }],
@@ -26,6 +33,10 @@ const userSchema = new Schema({
   position: {
     type: String,
     default: null,
+  },
+  requestBecomeTutor: {
+    type: Boolean,
+    default: false,
   },
 });
 

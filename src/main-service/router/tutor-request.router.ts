@@ -7,6 +7,9 @@ import { faker } from "@faker-js/faker";
 import { randomDate } from "../utils/date.util";
 import { EStatusRequest } from "../model/tutor-request.model";
 import SubjectDataSource from "../datasource/subjectDataSource";
+import { isFullStudent } from "../utils/tutor-request.util";
+import { verifyJWT, verifyRole } from "../common/middleware";
+import { Role } from "../../common/model/User";
 
 type IDataSource = {
   userDataSource: UserDataSource;
@@ -37,12 +40,17 @@ class TutorRequestRouter {
   }
 
   private getAllTutorRequest() {
-    this.router.get("/tutor-request/all", async (req, res) => {
-      const tutorRequests =
-        await this.dataSource.tutorRequestDataSource.getAll();
-      console.info(`🔥LOGGER:: tutorRequests`, tutorRequests);
-      return res.send(tutorRequests);
-    });
+    this.router.get(
+      "/tutor-request/all",
+      verifyJWT,
+      verifyRole(Role.ADMIN),
+      async (req, res) => {
+        const tutorRequests =
+          await this.dataSource.tutorRequestDataSource.getAll();
+        console.info(`🔥LOGGER:: tutorRequests`, tutorRequests);
+        return res.send(tutorRequests);
+      },
+    );
   }
 
   private getTutorRequestAvailable() {
@@ -52,7 +60,7 @@ class TutorRequestRouter {
         req.params.id,
       );
       console.info(`🔥LOGGER:: currentUser `, currentUser);
-      if (currentUser.role === "teacher") {
+      if (currentUser.role === Role.TEACHER) {
         const tutorRequests =
           await this.dataSource.tutorRequestDataSource.getAvailableByTeacherId(
             currentUser._id,
@@ -63,7 +71,10 @@ class TutorRequestRouter {
         await this.dataSource.tutorRequestDataSource.getAvailableByStudentId(
           currentUser._id,
         );
-      return res.send(tutorRequests);
+      const tutorRequestFilter = tutorRequests.filter(
+        (item) => !isFullStudent(item),
+      );
+      return res.send(tutorRequestFilter);
     });
   }
 
@@ -167,10 +178,10 @@ class TutorRequestRouter {
           const allUser = await this.dataSource.userDataSource.getAllListUser();
           const allUserId = allUser?.map((item) => ({ _id: item?._id }));
           const allStudentId = allUser
-            ?.filter((item) => item?.role === "student")
+            ?.filter((item) => item?.role === Role.STUDENT)
             ?.map?.((item) => ({ _id: item?._id }));
           const allTeacherId = allUser
-            ?.filter((item) => item?.role === "teacher")
+            ?.filter((item) => item?.role === Role.TEACHER)
             ?.map?.((item) => ({ _id: item?._id }));
           const allSubject = await this.dataSource.subjectDataSource.getAll();
           const allSubjectId = allSubject?.map((item) => ({ _id: item?._id }));

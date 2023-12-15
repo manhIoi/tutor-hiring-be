@@ -50,7 +50,9 @@ class Authentication {
         user._id,
       );
       return res.send({
-        token: jwt.sign({ phone: user.phone, _id: user._id }, "key").toString(),
+        token: jwt
+          .sign({ phone: user.phone, _id: user._id, role: user.role }, "key")
+          .toString(),
         user: removeHiddenField(user),
         chatBot: isEmpty(chatBot)
           ? await this.dataSource.userDataSource.insertChatBot({

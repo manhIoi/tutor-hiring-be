@@ -1,8 +1,8 @@
-export enum ERole {
-  ADMIN,
-  TUTOR,
-  STUDENT,
-}
+export const Role = {
+  ADMIN: "admin",
+  TEACHER: "teacher",
+  STUDENT: "student",
+};
 
 export enum ERolePermission {
   READ,
@@ -14,5 +14,5 @@ export interface IUser {
   username: string;
   displayName: string;
   age: number;
-  role: ERole;
+  role: any;
 }
