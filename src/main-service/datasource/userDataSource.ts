@@ -1,5 +1,6 @@
 import User from "../model/user.model";
 import ChatBot from "../model/chat-bot.model";
+import { Role } from "../../common/model/User";
 
 class UserDataSource {
   getAllListUser() {
@@ -31,6 +32,10 @@ class UserDataSource {
 
   updateUser(filter, newData) {
     return User.findOneAndUpdate(filter, newData, { new: true });
+  }
+
+  getUserBecomeTeacher() {
+    return User.find({ role: Role.STUDENT, requestBecomeTutor: true });
   }
 }
 

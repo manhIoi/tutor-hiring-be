@@ -4,6 +4,8 @@ import userDataSource from "../datasource/userDataSource";
 import ERROR_CODE from "../constant/errorCode";
 import { removeHiddenField } from "../utils/authentication.util";
 import { faker } from "@faker-js/faker";
+import { verifyJWT, verifyRole } from "../common/middleware";
+import { Role } from "../../common/model/User";
 
 type IDataSource = {
   userDataSource: UserDataSource;
@@ -23,6 +25,8 @@ class UserRouter {
     this.getAllUser();
     this.getSuggestUserByRole();
     this.updateUser();
+    this.approveBecomeTeacher();
+    this.getListUserRequestBecomeTeacher();
     this.insertRandomUser();
   }
 
@@ -56,6 +60,55 @@ class UserRouter {
       }
       return res.send(removeHiddenField(newData));
     });
+  }
+
+  getListUserRequestBecomeTeacher() {
+    this.router.get(
+      "/user/become-teacher/all",
+      verifyJWT,
+      verifyRole(Role.ADMIN),
+      async (req, res) => {
+        try {
+          const response =
+            await this.dataSource.userDataSource.getUserBecomeTeacher();
+          return res.send(response);
+        } catch (e) {
+          console.info(`LOG_IT:: e getListUserRequestBecomeTeacher`, e);
+          return res
+            .status(ERROR_CODE.INTERNAL_SERVER_ERROR)
+            .json({ error: "Call Api Exception" });
+        }
+      },
+    );
+  }
+
+  approveBecomeTeacher() {
+    this.router.post(
+      "/user/update/become-teacher/:id",
+      verifyJWT,
+      verifyRole(Role.ADMIN),
+      async (req, res) => {
+        try {
+          const { id } = req.params || {};
+          const newData = await this.dataSource.userDataSource.updateUser(
+            { _id: id, requestBecomeTutor: true },
+            { role: Role.TEACHER },
+          );
+          console.info(`LOG_IT:: newData`, newData);
+          if (!newData) {
+            return res
+              .status(ERROR_CODE.BAD_REQUEST)
+              .json({ error: "Update profile failed" });
+          }
+          return res.send(removeHiddenField(newData));
+        } catch (e) {
+          console.info(`LOG_IT:: e approveBecomeTeacher`, e);
+          return res
+            .status(ERROR_CODE.INTERNAL_SERVER_ERROR)
+            .json({ error: "Call Api Exception" });
+        }
+      },
+    );
   }
 
   insertRandomUser() {

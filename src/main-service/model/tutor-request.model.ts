@@ -4,7 +4,8 @@ const { Schema } = mongoose;
 
 export enum EStatusRequest {
   OPEN = 0,
-  TEACHER_APPROVAL = 1,
+  HAS_TEACHER = 1,
+  TEACHER_APPROVAL = 2,
 }
 
 const tutorRequestSchema = new Schema({
@@ -42,6 +43,10 @@ const tutorRequestSchema = new Schema({
   createdAt: {
     type: Date,
     default: randomDate(new Date(2023, 1, 1), new Date()),
+  },
+  lastUpdate: {
+    type: Number,
+    default: new Date().getTime(),
   },
 });
 

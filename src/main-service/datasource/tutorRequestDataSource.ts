@@ -5,7 +5,8 @@ class TutorRequestDataSource {
     return TutorRequest.find({})
       .populate("subjects")
       .populate("user")
-      .populate("teacher");
+      .populate("teacher")
+      .sort({ lastUpdate: -1 });
   }
 
   getAvailableByTeacherId(id) {
@@ -17,7 +18,8 @@ class TutorRequestDataSource {
     })
       .populate("subjects")
       .populate("user")
-      .populate("teacher");
+      .populate("teacher")
+      .sort({ lastUpdate: -1 });
   }
 
   getAvailableByStudentId(id) {
@@ -28,14 +30,16 @@ class TutorRequestDataSource {
     })
       .populate("subjects")
       .populate("user")
-      .populate("teacher");
+      .populate("teacher")
+      .sort({ lastUpdate: -1 });
   }
 
   getById(id) {
     return TutorRequest.find({ _id: id })
       .populate("subjects")
       .populate("user")
-      .populate("teacher");
+      .populate("teacher")
+      .sort({ lastUpdate: -1 });
   }
 
   getByUserId(id) {
@@ -45,7 +49,8 @@ class TutorRequestDataSource {
       .populate("subjects")
       .populate("user")
       .populate("teacher")
-      .populate("students");
+      .populate("students")
+      .sort({ lastUpdate: -1 });
   }
 
   insertTutorRequest(tutoRequest) {
@@ -66,7 +71,8 @@ class TutorRequestDataSource {
     })
       .populate("subjects")
       .populate("user")
-      .populate("teacher");
+      .populate("teacher")
+      .sort({ lastUpdate: -1 });
   }
 
   deleteTutorRequest(id) {

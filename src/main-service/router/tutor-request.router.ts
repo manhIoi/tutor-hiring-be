@@ -99,6 +99,7 @@ class TutorRequestRouter {
   private insertTutorRequest() {
     this.router.post("/tutor-request/add", async (req, res) => {
       const tutorRequest = req.body;
+      tutorRequest.lastUpdate = new Date().getTime();
       console.info("LOGGER:: tutorRequest", tutorRequest);
       if (!tutorRequest) {
         return res.send(ErrorCode.BAD_REQUEST);
@@ -129,6 +130,7 @@ class TutorRequestRouter {
         tutorRequest.teacher = {
           _id: id,
         };
+        tutorRequest.lastUpdate = new Date().getTime();
         const status =
           await this.dataSource.tutorRequestDataSource.insertTutorRequest(
             tutorRequest,
@@ -158,6 +160,7 @@ class TutorRequestRouter {
     this.router.post("/tutor-request/detail/update/:id", async (req, res) => {
       const { id } = req.params;
       const newData = req.body;
+      newData.lastUpdate = new Date().getTime();
       const filter = {
         _id: id,
       };
@@ -185,6 +188,7 @@ class TutorRequestRouter {
             ?.map?.((item) => ({ _id: item?._id }));
           const allSubject = await this.dataSource.subjectDataSource.getAll();
           const allSubjectId = allSubject?.map((item) => ({ _id: item?._id }));
+          const lastUpdate = new Date().getTime();
           const { numberRandom } = req.params;
           const result = [];
           for (let i = 0; i < parseInt(numberRandom); i++) {
@@ -196,13 +200,17 @@ class TutorRequestRouter {
               address: faker.location.streetAddress(true),
               startAt: randomDate(new Date(), new Date(2023, 12, 31)),
               endAt: randomDate(new Date(2024, 4, 1), new Date(2024, 6, 31)),
-              status: faker.number.int({ min: 0, max: 1 }),
+              status: faker.number.int({ min: 0, max: 2 }),
               timeLine: faker.number.int({ min: 1, max: 3 }),
               weekDays: faker.helpers.rangeToNumber({ min: 1, max: 7 }), // 5
               isOnline: faker.datatype.boolean(),
               numOfStudents: faker.number.int({ min: 1, max: 30 }),
               contact: faker.phone.number("0#########"),
               createdAt: new Date(),
+              lastUpdate: faker.number.int({
+                min: lastUpdate,
+                max: lastUpdate + faker.number.int({ min: 1000, max: 20000 }),
+              }),
               subjects: faker.helpers.arrayElements(
                 allSubjectId,
                 faker.number.int({ min: 1, max: 3 }),
@@ -211,9 +219,19 @@ class TutorRequestRouter {
               teacher: faker.helpers.arrayElement(allTeacherId),
             };
             const shouldHasTeacher = mockData.status !== 0;
+            const students = [mockData.user];
             !shouldHasTeacher && delete mockData["teacher"];
-            result.push(mockData);
+            const isWaitingTeacherApprove =
+              mockData?.teacher &&
+              mockData.numOfStudents === 1 &&
+              students?.length === 1;
+            const status = isWaitingTeacherApprove
+              ? faker.number.int({ min: 1, max: 2 })
+              : mockData?.status;
+            result.push({ ...mockData, students, status });
           }
+
+          console.info(`LOG_IT:: result`, result);
 
           const resultImport =
             await this.dataSource.tutorRequestDataSource.insertListTutorRequest(

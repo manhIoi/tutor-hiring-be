@@ -10,6 +10,9 @@ const userMetaDataSchema = new Schema({
   },
   email: String,
   university: String,
+  signature: String,
+  identityCard: [String],
+  certificate: [String],
 });
 
 const userSchema = new Schema({

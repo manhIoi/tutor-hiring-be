@@ -22,6 +22,8 @@
     "esm": "^3.2.25",
     "express": "^4.18.2",
     "express-jwt": "^8.4.1",
+    "firebase": "^10.7.1",
+    "firebase-admin": "^12.0.0",
     "jsonwebtoken": "^9.0.2",
     "lodash": "^4.17.21",
     "mongodb": "^6.1.0",

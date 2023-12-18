@@ -2,15 +2,19 @@ import ERROR_CODE from "../../constant/errorCode";
 import jwt from "jsonwebtoken";
 
 export function verifyJWT(req, res, next) {
-  const header = req.headers.authorization || req.headers.Authorization;
-  if (!header.startsWith("Bearer "))
+  try {
+    const header = req.headers.authorization || req.headers.Authorization;
+    if (!header.startsWith("Bearer "))
+      return res.sendStatus(ERROR_CODE.UNAUTHORIZED);
+    const token = header.split(" ")[1];
+    jwt.verify(token, "key", (err, decoded) => {
+      if (err) res.sendStatus(ERROR_CODE.FORBIDDEN);
+      req.role = decoded?.role;
+      next();
+    });
+  } catch (e) {
     return res.sendStatus(ERROR_CODE.UNAUTHORIZED);
-  const token = header.split(" ")[1];
-  jwt.verify(token, "key", (err, decoded) => {
-    if (err) res.sendStatus(ERROR_CODE.FORBIDDEN);
-    req.role = decoded?.role;
-    next();
-  });
+  }
 }
 
 export function verifyRole(...roles) {
