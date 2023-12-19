@@ -1,5 +1,6 @@
 import { IRouter } from "express";
 import VoteDataSource from "../datasource/voteDataSource";
+import { verifyJWT } from "../common/middleware";
 
 type IDataSource = {
   voteDataSource: VoteDataSource;
@@ -21,7 +22,7 @@ class VoteRouter {
   }
 
   insertVote() {
-    this.router.post("/vote/add", async (req, res) => {
+    this.router.post("/vote/add", verifyJWT, async (req, res) => {
       const body = req.body;
       return this.dataSource.voteDataSource.insertVote(body);
     });

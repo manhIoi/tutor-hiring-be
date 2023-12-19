@@ -6,6 +6,7 @@ export enum EStatusRequest {
   OPEN = 0,
   HAS_TEACHER = 1,
   TEACHER_APPROVAL = 2,
+  CLASS_ENDED,
 }
 
 const tutorRequestSchema = new Schema({

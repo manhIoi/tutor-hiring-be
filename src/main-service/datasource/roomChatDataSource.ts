@@ -6,7 +6,7 @@ class RoomChatDataSource {
 
   getRoomChatById(idUser) {
     return RoomChat.find({
-      user: idUser,
+      $or: [{ user: idUser }, { persons: idUser }],
     })
       .populate("persons")
       .populate("lastMessage");

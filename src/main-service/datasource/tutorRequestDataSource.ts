@@ -9,6 +9,10 @@ class TutorRequestDataSource {
       .sort({ lastUpdate: -1 });
   }
 
+  getWithQuery(filter) {
+    return TutorRequest.find(filter);
+  }
+
   getAvailableByTeacherId(id) {
     return TutorRequest.find({
       status: EStatusRequest.OPEN,
@@ -59,6 +63,10 @@ class TutorRequestDataSource {
 
   insertListTutorRequest(list) {
     return TutorRequest.insertMany(list);
+  }
+
+  findAndUpDateWithQuery(filter, newData) {
+    return TutorRequest.updateMany(filter, newData, { new: true });
   }
 
   findAndUpdateTutorRequest(filter, newData) {

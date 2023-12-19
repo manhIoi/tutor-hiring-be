@@ -36,6 +36,8 @@ class TutorRequestRouter {
     this.updateTutorRequestDetail();
     this.getTutorRequestAvailable();
     this.getTutorRequestByTeacher();
+    this.jobUpdateTutorRequestStatus();
+    this.getTutorRequestWithQuery();
     this.insertRandomTutorRequest();
   }
 
@@ -93,6 +95,18 @@ class TutorRequestRouter {
       const tutorRequests =
         await this.dataSource.tutorRequestDataSource.getByTeacherId(id);
       return res.send(tutorRequests);
+    });
+  }
+
+  private getTutorRequestWithQuery() {
+    this.router.post("/tutor-request/query", async (req, res) => {
+      try {
+        const tutorRequest =
+          await this.dataSource.tutorRequestDataSource.getWithQuery(req.body);
+        return res.send(tutorRequest);
+      } catch (e) {
+        console.info(`LOG_IT:: getTutorRequestWithQuery e`, e);
+      }
     });
   }
 
@@ -173,6 +187,34 @@ class TutorRequestRouter {
     });
   }
 
+  private jobUpdateTutorRequestStatus() {
+    this.router.post(
+      "/tutor-request/update/check-available",
+      async (req, res) => {
+        try {
+          const currentDate = new Date();
+          const filter = {
+            endAt: {
+              $lte: currentDate,
+            },
+          };
+          const newData = {
+            status: EStatusRequest.CLASS_ENDED,
+          };
+
+          const response =
+            await this.dataSource.tutorRequestDataSource.findAndUpDateWithQuery(
+              filter,
+              newData,
+            );
+          return res.send(response);
+        } catch (e) {
+          console.info(`LOG_IT:: jobUpdateTutorRequestStatus e`, e);
+        }
+      },
+    );
+  }
+
   private insertRandomTutorRequest() {
     this.router.post(
       "/tutor-request/random/:numberRandom",
@@ -198,10 +240,10 @@ class TutorRequestRouter {
               description: faker.lorem.paragraph(2),
               content: faker.lorem.lines(3),
               address: faker.location.streetAddress(true),
-              startAt: randomDate(new Date(), new Date(2023, 12, 31)),
-              endAt: randomDate(new Date(2024, 4, 1), new Date(2024, 6, 31)),
+              startAt: randomDate(new Date(2023, 4, 31), new Date(2023, 6, 30)),
+              endAt: randomDate(new Date(2023, 8, 1), new Date(2023, 12, 31)),
               status: faker.number.int({ min: 0, max: 2 }),
-              timeLine: faker.number.int({ min: 1, max: 3 }),
+              timeline: faker.number.int({ min: 1, max: 3 }) * 60,
               weekDays: faker.helpers.rangeToNumber({ min: 1, max: 7 }), // 5
               isOnline: faker.datatype.boolean(),
               numOfStudents: faker.number.int({ min: 1, max: 30 }),
