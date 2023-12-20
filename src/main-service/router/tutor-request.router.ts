@@ -241,7 +241,7 @@ class TutorRequestRouter {
               content: faker.lorem.lines(3),
               address: faker.location.streetAddress(true),
               startAt: randomDate(new Date(2023, 4, 31), new Date(2023, 6, 30)),
-              endAt: randomDate(new Date(2023, 8, 1), new Date(2023, 12, 31)),
+              endAt: randomDate(new Date(2023, 7, 1), new Date(2023, 12, 31)),
               status: faker.number.int({ min: 0, max: 2 }),
               timeline: faker.number.int({ min: 1, max: 3 }) * 60,
               weekDays: faker.helpers.rangeToNumber({ min: 1, max: 7 }), // 5
@@ -267,10 +267,16 @@ class TutorRequestRouter {
               mockData?.teacher &&
               mockData.numOfStudents === 1 &&
               students?.length === 1;
-            const status = isWaitingTeacherApprove
-              ? faker.number.int({ min: 1, max: 2 })
-              : mockData?.status;
-            result.push({ ...mockData, students, status });
+            const getStatus = () => {
+              if (mockData.endAt.getTime() <= new Date().getTime()) {
+                return 3;
+              }
+              if (isWaitingTeacherApprove) {
+                return faker.number.int({ min: 1, max: 2 });
+              }
+              return mockData?.status;
+            };
+            result.push({ ...mockData, students, status: getStatus() });
           }
 
           console.info(`LOG_IT:: result`, result);

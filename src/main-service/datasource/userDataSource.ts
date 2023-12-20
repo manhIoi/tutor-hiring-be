@@ -4,10 +4,17 @@ import { Role } from "../../common/model/User";
 
 class UserDataSource {
   getAllListUser() {
-    return User.find({}).populate("subjects").select("-password");
+    return User.find({})
+      .populate("subjects")
+      .select("-password")
+      .populate("votes")
+      .populate("userReceive");
   }
   getSuggestUserByRole(role: String) {
-    return User.find({ role }).populate("subjects");
+    return User.find({ role })
+      .populate("subjects")
+      .select("-password")
+      .populate("votes");
   }
 
   getUserByPhone(phone: String) {
@@ -31,7 +38,9 @@ class UserDataSource {
   }
 
   updateUser(filter, newData) {
-    return User.findOneAndUpdate(filter, newData, { new: true });
+    return User.findOneAndUpdate(filter, newData, { new: true }).select(
+      "-password",
+    );
   }
 
   getUserBecomeTeacher() {

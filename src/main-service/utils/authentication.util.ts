@@ -1,4 +1,5 @@
 import bcrypt from "bcrypt";
+import { omit } from "lodash";
 
 export const genPassword = async (password: string) => {
   const passwordHashed = await bcrypt.hash(password.toString(), 10);
@@ -10,6 +11,6 @@ export const comparePassword = async (password: string, hash: string) => {
 };
 
 export const removeHiddenField = (user: any) => {
-  delete user.password;
-  return user;
+  console.info(`LOG_IT:: user`, user);
+  return omit(user, ["password"]);
 };

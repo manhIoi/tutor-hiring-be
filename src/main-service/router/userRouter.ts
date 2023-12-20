@@ -6,9 +6,12 @@ import { removeHiddenField } from "../utils/authentication.util";
 import { faker } from "@faker-js/faker";
 import { verifyJWT, verifyRole } from "../common/middleware";
 import { Role } from "../../common/model/User";
+import VoteDataSource from "../datasource/voteDataSource";
+import { getVoteValue } from "../utils/user.util";
 
 type IDataSource = {
   userDataSource: UserDataSource;
+  voteDataSource: VoteDataSource;
 };
 
 class UserRouter {
@@ -41,7 +44,13 @@ class UserRouter {
       const role = req.params.role;
       const data =
         await this.dataSource.userDataSource.getSuggestUserByRole(role);
-      return res.send(data);
+      const _data = data
+        .map((item: any) => {
+          const voteValue = getVoteValue(item.votes) || 0;
+          return { ...item?._doc, voteValue };
+        })
+        .sort((a, b) => b.voteValue - a.voteValue);
+      return res.send(_data);
     });
   }
 

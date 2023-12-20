@@ -5,7 +5,7 @@ const voteSchema = new Schema({
   userSend: { type: Schema.Types.ObjectId, ref: "User", required: true },
   userReceive: { type: Schema.Types.ObjectId, ref: "User", required: true },
   value: { type: Number, required: true },
-  message: { type: Number, required: true },
+  message: { type: String, required: true },
   class: { type: Schema.Types.ObjectId, ref: "TutorRequest", required: true },
 });
 

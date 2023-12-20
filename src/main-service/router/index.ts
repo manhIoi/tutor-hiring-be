@@ -11,6 +11,8 @@ import SubjectDataSource from "../datasource/subjectDataSource";
 import RoomChatRouter from "./room-chat.router";
 import RoomChatDataSource from "../datasource/roomChatDataSource";
 import UploadRouter from "./upload.router";
+import VoteRouter from "./voteRouter";
+import VoteDataSource from "../datasource/voteDataSource";
 
 const apiRouter = express.Router();
 
@@ -19,6 +21,7 @@ new Authentication(apiRouter, {
 });
 new UserRouter(apiRouter, {
   userDataSource: new UserDataSource(),
+  voteDataSource: new VoteDataSource(),
 });
 new TutorRequestRouter(apiRouter, {
   userDataSource: new UserDataSource(),
@@ -37,4 +40,8 @@ new RoomChatRouter(apiRouter, {
 });
 
 new UploadRouter(apiRouter, {});
+new VoteRouter(apiRouter, {
+  voteDataSource: new VoteDataSource(),
+  userDataSource: new UserDataSource(),
+});
 export default apiRouter;

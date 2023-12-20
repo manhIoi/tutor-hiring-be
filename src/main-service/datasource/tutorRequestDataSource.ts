@@ -31,6 +31,9 @@ class TutorRequestDataSource {
       user: {
         $ne: id,
       },
+      status: {
+        $lte: EStatusRequest.HAS_TEACHER,
+      },
     })
       .populate("subjects")
       .populate("user")
