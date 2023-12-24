@@ -13,21 +13,36 @@ import RoomChatDataSource from "../datasource/roomChatDataSource";
 import UploadRouter from "./upload.router";
 import VoteRouter from "./voteRouter";
 import VoteDataSource from "../datasource/voteDataSource";
+import NotificationRouter from "./notification.router";
+import NotificationDataSource from "../datasource/notificationDataSource";
+import { chatSocket } from "../socket";
 
 const apiRouter = express.Router();
 
 new Authentication(apiRouter, {
   userDataSource: new UserDataSource(),
 });
-new UserRouter(apiRouter, {
-  userDataSource: new UserDataSource(),
-  voteDataSource: new VoteDataSource(),
-});
-new TutorRequestRouter(apiRouter, {
-  userDataSource: new UserDataSource(),
-  tutorRequestDataSource: new TutorRequestDataSource(),
-  subjectDataSource: new SubjectDataSource(),
-});
+new UserRouter(
+  apiRouter,
+  {
+    userDataSource: new UserDataSource(),
+    voteDataSource: new VoteDataSource(),
+  },
+  {
+    socketService: chatSocket,
+  },
+);
+new TutorRequestRouter(
+  apiRouter,
+  {
+    userDataSource: new UserDataSource(),
+    tutorRequestDataSource: new TutorRequestDataSource(),
+    subjectDataSource: new SubjectDataSource(),
+  },
+  {
+    socketService: chatSocket,
+  },
+);
 new SubjectRouter(apiRouter, {
   subjectDataSource: new SubjectDataSource(),
 });
@@ -43,5 +58,9 @@ new UploadRouter(apiRouter, {});
 new VoteRouter(apiRouter, {
   voteDataSource: new VoteDataSource(),
   userDataSource: new UserDataSource(),
+});
+
+new NotificationRouter(apiRouter, {
+  notificationDataSource: new NotificationDataSource(),
 });
 export default apiRouter;

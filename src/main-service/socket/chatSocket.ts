@@ -1,14 +1,14 @@
 import SocketIO from "socket.io";
 import ChatDataSource from "../datasource/chatDataSource";
-import colors from "colors";
 import OpenAI from "openai";
-import readlineSync from "readline-sync";
 import dotenv from "dotenv";
 import RoomChatDataSource from "../datasource/roomChatDataSource";
+import NotificationDataSource from "../datasource/notificationDataSource";
 
 interface IDataSource {
   chatDataSource: ChatDataSource;
   roomChatDataSource: RoomChatDataSource;
+  notificationDataSource: NotificationDataSource;
 }
 
 class ChatSocket {
@@ -20,6 +20,19 @@ class ChatSocket {
     this.dataSource = dataSource;
     this.users = [];
   }
+
+  async emitEvent(eventName, data, createNotification = false) {
+    if (createNotification) {
+      const [notification] =
+        await this.dataSource.notificationDataSource.saveNotification(data);
+      console.info(`LOG_IT:: new notification`, notification);
+      this.io.emit(eventName, notification);
+    } else {
+      this.io.emit(eventName, data);
+    }
+  }
+
+  private buildNotificationData() {}
 
   initSocket() {
     dotenv.config();
@@ -138,6 +151,32 @@ class ChatSocket {
       socket.on("typing", (data) =>
         socket.broadcast.emit("typingResponse", data),
       );
+
+      socket.on("joinClass", (data) => {
+        console.info(`LOG_IT:: data`, JSON.stringify(data));
+        const { tutorRequest, userId } = data || {};
+        const listUserReceive = [tutorRequest?.user, ...tutorRequest?.students];
+        tutorRequest?.teacher && listUserReceive.push(tutorRequest?.teacher);
+        const listUserFiltered = listUserReceive.filter(
+          (item) => item !== userId,
+        );
+        const listNotification = listUserFiltered.map((id) => ({
+          user: id,
+          message: `Có thông báo mới về lớp học ${tutorRequest?._id}`,
+          data: JSON.stringify({
+            typeNotification: "tutor_request",
+            id: tutorRequest?._id,
+          }),
+        }));
+
+        this.dataSource.notificationDataSource
+          .saveListNotification(listNotification)
+          .then((values) => {
+            values.forEach((notification) => {
+              io.emit(`notify_${notification.user}`, notification);
+            });
+          });
+      });
 
       socket.on("disconnect", () => {
         console.log("🔥: A user disconnected");

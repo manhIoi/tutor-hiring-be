@@ -8,18 +8,26 @@ import { verifyJWT, verifyRole } from "../common/middleware";
 import { Role } from "../../common/model/User";
 import VoteDataSource from "../datasource/voteDataSource";
 import { getVoteValue } from "../utils/user.util";
+import ChatSocket from "../socket/chatSocket";
 
 type IDataSource = {
   userDataSource: UserDataSource;
   voteDataSource: VoteDataSource;
 };
 
+type IService = {
+  socketService: ChatSocket;
+};
+
 class UserRouter {
   router: IRouter;
   dataSource: IDataSource;
-  constructor(router: IRouter, dataSource: IDataSource) {
+  service: IService;
+
+  constructor(router: IRouter, dataSource: IDataSource, service: IService) {
     this.router = router;
     this.dataSource = dataSource;
+    this.service = service;
     this.registerRoutes();
   }
 
@@ -31,6 +39,7 @@ class UserRouter {
     this.approveBecomeTeacher();
     this.getListUserRequestBecomeTeacher();
     this.insertRandomUser();
+    this.rejectBecomeTeacher();
   }
 
   getAllUser() {
@@ -109,9 +118,48 @@ class UserRouter {
               .status(ERROR_CODE.BAD_REQUEST)
               .json({ error: "Update profile failed" });
           }
+          this.service.socketService.emitEvent(
+            `become_teacher_${id}`,
+            {
+              title: "Thông báo từ admin",
+              message: "Xin chúc mừng, bạn đã được duyệt trở thành giáo viên",
+              user: id,
+            },
+            true,
+          );
           return res.send(removeHiddenField(newData));
         } catch (e) {
           console.info(`LOG_IT:: e approveBecomeTeacher`, e);
+          return res
+            .status(ERROR_CODE.INTERNAL_SERVER_ERROR)
+            .json({ error: "Call Api Exception" });
+        }
+      },
+    );
+  }
+
+  rejectBecomeTeacher() {
+    this.router.post(
+      "/user/update/reject-become-teacher/:id",
+      verifyJWT,
+      verifyRole(Role.ADMIN),
+      async (req, res) => {
+        try {
+          const { id } = req.params || {};
+          const newData = await this.dataSource.userDataSource.updateUser(
+            { _id: id, requestBecomeTutor: true },
+            { role: Role.STUDENT, requestBecomeTutor: false },
+          );
+          console.info(`LOG_IT:: newData`, newData);
+          if (!newData) {
+            return res
+              .status(ERROR_CODE.BAD_REQUEST)
+              .json({ error: "Update profile failed" });
+          }
+
+          return res.send(removeHiddenField(newData));
+        } catch (e) {
+          console.info(`LOG_IT:: e rejectBecomeTeacher`, e);
           return res
             .status(ERROR_CODE.INTERNAL_SERVER_ERROR)
             .json({ error: "Call Api Exception" });

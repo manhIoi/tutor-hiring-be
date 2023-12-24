@@ -9,6 +9,7 @@ import {
 } from "../utils/authentication.util";
 import { checkDuplicateAccount } from "../middleware/verifySignUp";
 import { isEmpty } from "lodash";
+import { verifyJWT } from "../common/middleware";
 
 type IDataSource = {
   userDataSource: UserDataSource;
@@ -26,40 +27,70 @@ class Authentication {
     // TODO: type in login
     this.login();
     this.register();
+    this.updatePassword();
     this.forgotPassword();
+    this.verifyOtp();
+    this.resetPassword();
+  }
+
+  private resetPassword() {
+    this.router.post("/users/reset-password", async (req, res) => {
+      try {
+        const { phone, newPassword } = req.body || {};
+        const passwordHashed = await genPassword(newPassword);
+        await this.dataSource.userDataSource.updateUser(
+          { phone },
+          { password: passwordHashed },
+        );
+        return res.send({ status: true });
+      } catch (e) {
+        console.info(`LOG_IT:: login e`, e);
+        return res
+          .sendStatus(ERROR_CODE.BAD_REQUEST)
+          .json({ error: "Internal error" });
+      }
+    });
   }
 
   login() {
     this.router.post("/user/login", async (req, res) => {
-      const { phone, password } = req.body;
-      console.info("LOGGER:: phone, password", phone, password);
-      const user = await this.dataSource.userDataSource.getUserByPhone(phone);
-      console.info("LOGGER:: user", user);
-      if (isEmpty(user)) {
+      try {
+        const { phone, password } = req.body;
+        console.info("LOGGER:: phone, password", phone, password);
+        const user = await this.dataSource.userDataSource.getUserByPhone(phone);
+        console.info("LOGGER:: user", user);
+        if (isEmpty(user)) {
+          return res.json({
+            error: "Không tìm thấy người dùng. Vui lòng kiểm tra lại",
+          });
+        }
+        const isCorrectPassword = await comparePassword(
+          password,
+          user?.password,
+        );
+        if (!isCorrectPassword && user?.password) {
+          return res.json({ error: "Mật khẩu không đúng. Vui lòng thử lại !" });
+        }
+        const [chatBot] = await this.dataSource.userDataSource.getChatBotByUser(
+          user._id,
+        );
+        return res.send({
+          token: jwt
+            .sign({ phone: user.phone, _id: user._id, role: user.role }, "key")
+            .toString(),
+          user: removeHiddenField(user),
+          chatBot: isEmpty(chatBot)
+            ? await this.dataSource.userDataSource.insertChatBot({
+                user: user?._id,
+              })
+            : chatBot,
+        });
+      } catch (e) {
+        console.info(`LOG_IT:: login e`, e);
         return res
-          .status(ERROR_CODE.NOT_FOUND)
-          .json({ error: "Không tìm thấy người dùng. Vui lòng kiểm tra lại" });
+          .sendStatus(ERROR_CODE.BAD_REQUEST)
+          .json({ error: "Internal error" });
       }
-      const isCorrectPassword = await comparePassword(password, user?.password);
-      if (!isCorrectPassword && user?.password) {
-        return res
-          .status(ERROR_CODE.BAD_REQUEST)
-          .json({ error: "Mật khẩu không đúng. Vui lòng thử lại !" });
-      }
-      const [chatBot] = await this.dataSource.userDataSource.getChatBotByUser(
-        user._id,
-      );
-      return res.send({
-        token: jwt
-          .sign({ phone: user.phone, _id: user._id, role: user.role }, "key")
-          .toString(),
-        user: removeHiddenField(user),
-        chatBot: isEmpty(chatBot)
-          ? await this.dataSource.userDataSource.insertChatBot({
-              user: user?._id,
-            })
-          : chatBot,
-      });
     });
   }
 
@@ -101,15 +132,75 @@ class Authentication {
     );
   }
 
-  forgotPassword() {
-    this.router.post("/user/forgot-password/:id", async (req, res) => {
-      const currentUser = await this.dataSource.userDataSource.getUserById(
-        req.params.id,
-      );
-      if (!currentUser) {
+  private verifyOtp() {
+    this.router.post("/users/verify-otp", async (req, res) => {
+      try {
+        const { code } = req.body;
+        if (code === "000000") {
+          setTimeout(() => {
+            return res.send({ status: true });
+          }, 1000);
+        } else {
+          return res.json({ error: "Otp không chính xác" });
+        }
+      } catch (e) {
         return res
-          .status(ERROR_CODE.NOT_FOUND)
-          .json({ error: "User not found" });
+          .sendStatus(ERROR_CODE.BAD_REQUEST)
+          .json({ error: "Internal error" });
+      }
+    });
+  }
+
+  private forgotPassword() {
+    this.router.post("/user/forgot-password", async (req, res) => {
+      try {
+        const { phone } = req.body || {};
+        const currentUser =
+          await this.dataSource.userDataSource.getUserByPhone(phone);
+        if (currentUser) {
+          return res.send(currentUser);
+        }
+        return res.json({ error: "Không tìm thấy người dùng" });
+      } catch (e) {
+        return res
+          .sendStatus(ERROR_CODE.BAD_REQUEST)
+          .json({ error: "Internal error" });
+      }
+    });
+  }
+
+  private updatePassword() {
+    this.router.post("/user/update-password", verifyJWT, async (req, res) => {
+      try {
+        const { currentPassword, newPassword, _id } = req.body || {};
+        const currentUser =
+          await this.dataSource.userDataSource.getUserById(_id);
+        const isCorrectPassword = await comparePassword(
+          currentPassword,
+          currentUser?.password,
+        );
+        const newPasswordHashed = await genPassword(newPassword);
+        console.info(
+          `LOG_IT:: update password`,
+          currentUser,
+          isCorrectPassword,
+          newPasswordHashed,
+          currentUser?.password === "",
+        );
+        if (!currentUser?.password || isCorrectPassword) {
+          const newData = await this.dataSource.userDataSource.updateUser(
+            { _id },
+            { password: newPasswordHashed },
+          );
+          return res.send(newData);
+        }
+        return res
+          .status(ERROR_CODE.BAD_REQUEST)
+          .json({ error: "Password not correct" });
+      } catch (e) {
+        return res
+          .status(ERROR_CODE.BAD_REQUEST)
+          .json({ error: "Update password fail" });
       }
     });
   }

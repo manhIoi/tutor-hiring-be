@@ -10,6 +10,7 @@ import SubjectDataSource from "../datasource/subjectDataSource";
 import { isFullStudent } from "../utils/tutor-request.util";
 import { verifyJWT, verifyRole } from "../common/middleware";
 import { Role } from "../../common/model/User";
+import ChatSocket from "../socket/chatSocket";
 
 type IDataSource = {
   userDataSource: UserDataSource;
@@ -17,12 +18,18 @@ type IDataSource = {
   subjectDataSource: SubjectDataSource;
 };
 
+type IService = {
+  socketService: ChatSocket;
+};
+
 class TutorRequestRouter {
   router: IRouter;
   dataSource: IDataSource;
-  constructor(router: IRouter, dataSource: IDataSource) {
+  service: IService;
+  constructor(router: IRouter, dataSource: IDataSource, service: IService) {
     this.router = router;
     this.dataSource = dataSource;
+    this.service = service;
     this.registerRoutes();
   }
 

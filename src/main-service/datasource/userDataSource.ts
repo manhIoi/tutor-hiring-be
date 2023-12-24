@@ -7,8 +7,7 @@ class UserDataSource {
     return User.find({})
       .populate("subjects")
       .select("-password")
-      .populate("votes")
-      .populate("userReceive");
+      .populate("votes");
   }
   getSuggestUserByRole(role: String) {
     return User.find({ role })
