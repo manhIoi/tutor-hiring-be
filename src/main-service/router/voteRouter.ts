@@ -4,6 +4,7 @@ import { verifyJWT } from "../common/middleware";
 import ErrorCode from "../constant/errorCode";
 import UserDataSource from "../datasource/userDataSource";
 import { removeHiddenField } from "../utils/authentication.util";
+import { chatSocket } from "../socket";
 
 type IDataSource = {
   voteDataSource: VoteDataSource;
@@ -31,12 +32,27 @@ class VoteRouter {
     this.router.post("/vote/add", verifyJWT, async (req, res) => {
       try {
         const body = req.body;
+        console.info(`LOG_IT:: insert vote`, body);
         const [newVote] = await this.dataSource.voteDataSource.insertVote(body);
         const newUser = await this.dataSource.userDataSource.updateUser(
           { _id: body?.userReceive },
           {
             $push: { votes: newVote?._id },
           },
+        );
+        console.info(`LOG_IT:: insert vote`, newUser);
+        chatSocket.emitEvent(
+          `vote_teacher_${newUser?._id}`,
+          {
+            title: "Đánh giá mới",
+            message: `Bạn nhận được đánh giá mới từ lớp học ${newVote?.class}`,
+            user: newUser?._id,
+            data: JSON.stringify({
+              type: "tutor_request",
+              id: newVote?.class,
+            }),
+          },
+          true,
         );
         return res.send({ newVote, newUser });
       } catch (e) {

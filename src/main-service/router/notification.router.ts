@@ -25,10 +25,9 @@ class NotificationRouter {
     this.router.get(`/notification/:id`, async (req, res) => {
       try {
         const { id } = req.params || {};
-        const response =
-          await this.dataSource.notificationDataSource.getNotificationByUser(
-            id,
-          );
+        const response = await this.dataSource.notificationDataSource
+          .getNotificationByUser(id)
+          .sort({ createdAt: -1 });
         return res.send(response);
       } catch (e) {
         console.info(`LOG_IT:: getListNotificationByUser e`, e);

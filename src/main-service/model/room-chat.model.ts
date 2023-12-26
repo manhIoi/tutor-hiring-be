@@ -3,7 +3,6 @@ const { Schema } = mongoose;
 
 const roomChatSchema = new Schema({
   persons: [{ type: Schema.Types.ObjectId, ref: "User", required: true }],
-  user: { type: Schema.Types.ObjectId, ref: "User", required: true },
   lastMessage: { type: Schema.Types.ObjectId, ref: "Chat" },
 });
 

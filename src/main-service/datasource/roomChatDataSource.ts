@@ -6,19 +6,14 @@ class RoomChatDataSource {
 
   getRoomChatById(idUser) {
     return RoomChat.find({
-      $or: [{ user: idUser }, { persons: idUser }],
+      persons: { $in: [idUser] },
     })
       .populate("persons")
       .populate("lastMessage");
   }
 
-  insertRoomChatByUser(user, person) {
-    return RoomChat.insertMany([
-      {
-        user,
-        persons: [person],
-      },
-    ]);
+  insertRoomChatByUser(persons) {
+    return RoomChat.insertMany([{ persons }]);
   }
 
   updateRoomChatByUser(filter, newData) {

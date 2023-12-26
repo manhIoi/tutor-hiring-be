@@ -46,6 +46,7 @@ class TutorRequestRouter {
     this.jobUpdateTutorRequestStatus();
     this.getTutorRequestWithQuery();
     this.insertRandomTutorRequest();
+    this.deleteManyTutorRequest();
   }
 
   private getAllTutorRequest() {
@@ -54,54 +55,82 @@ class TutorRequestRouter {
       verifyJWT,
       verifyRole(Role.ADMIN),
       async (req, res) => {
-        const tutorRequests =
-          await this.dataSource.tutorRequestDataSource.getAll();
-        console.info(`🔥LOGGER:: tutorRequests`, tutorRequests);
-        return res.send(tutorRequests);
+        try {
+          const tutorRequests =
+            await this.dataSource.tutorRequestDataSource.getAll();
+          console.info(`🔥LOGGER:: tutorRequests`, tutorRequests);
+          return res.send(tutorRequests);
+        } catch (e) {
+          console.info(`LOG_IT:: e getAllTutorRequest`, e);
+          return res
+            .status(ERROR_CODE.INTERNAL_SERVER_ERROR)
+            .json({ error: "Call Api Exception" });
+        }
       },
     );
   }
 
   private getTutorRequestAvailable() {
     this.router.get("/tutor-request/available/:id", async (req, res) => {
-      console.info(`🔥LOGGER:: req.params.id `, req.params.id);
-      const currentUser = await this.dataSource.userDataSource.getUserById(
-        req.params.id,
-      );
-      console.info(`🔥LOGGER:: currentUser `, currentUser);
-      if (currentUser.role === Role.TEACHER) {
+      try {
+        console.info(`🔥LOGGER:: req.params.id `, req.params.id);
+        const currentUser = await this.dataSource.userDataSource.getUserById(
+          req.params.id,
+        );
+        console.info(`🔥LOGGER:: currentUser `, currentUser);
+        if (currentUser.role === Role.TEACHER) {
+          const tutorRequests =
+            await this.dataSource.tutorRequestDataSource.getAvailableByTeacherId(
+              currentUser._id,
+            );
+          return res.send(tutorRequests);
+        }
         const tutorRequests =
-          await this.dataSource.tutorRequestDataSource.getAvailableByTeacherId(
+          await this.dataSource.tutorRequestDataSource.getAvailableByStudentId(
             currentUser._id,
           );
-        return res.send(tutorRequests);
-      }
-      const tutorRequests =
-        await this.dataSource.tutorRequestDataSource.getAvailableByStudentId(
-          currentUser._id,
+        const tutorRequestFilter = tutorRequests.filter(
+          (item) => !isFullStudent(item),
         );
-      const tutorRequestFilter = tutorRequests.filter(
-        (item) => !isFullStudent(item),
-      );
-      return res.send(tutorRequestFilter);
+        return res.send(tutorRequestFilter);
+      } catch (e) {
+        console.info(`LOG_IT:: e getTutorRequestAvailable`, e);
+        return res
+          .status(ERROR_CODE.INTERNAL_SERVER_ERROR)
+          .json({ error: "Call Api Exception" });
+      }
     });
   }
 
   private getTutorRequestByUser() {
     this.router.get("/tutor-request/:id", async (req, res) => {
-      const { id } = req.params;
-      const tutorRequests =
-        await this.dataSource.tutorRequestDataSource.getByUserId(id);
-      return res.send(tutorRequests);
+      try {
+        const { id } = req.params;
+        const tutorRequests =
+          await this.dataSource.tutorRequestDataSource.getByUserId(id);
+        return res.send(tutorRequests);
+      } catch (e) {
+        console.info(`LOG_IT:: e getTutorRequestByUser`, e);
+        return res
+          .status(ERROR_CODE.INTERNAL_SERVER_ERROR)
+          .json({ error: "Call Api Exception" });
+      }
     });
   }
 
   private getTutorRequestByTeacher() {
     this.router.get("/tutor-request/teacher/:id", async (req, res) => {
-      const { id } = req.params;
-      const tutorRequests =
-        await this.dataSource.tutorRequestDataSource.getByTeacherId(id);
-      return res.send(tutorRequests);
+      try {
+        const { id } = req.params;
+        const tutorRequests =
+          await this.dataSource.tutorRequestDataSource.getByTeacherId(id);
+        return res.send(tutorRequests);
+      } catch (e) {
+        console.info(`LOG_IT:: e getTutorRequestByTeacher`, e);
+        return res
+          .status(ERROR_CODE.INTERNAL_SERVER_ERROR)
+          .json({ error: "Call Api Exception" });
+      }
     });
   }
 
@@ -112,25 +141,35 @@ class TutorRequestRouter {
           await this.dataSource.tutorRequestDataSource.getWithQuery(req.body);
         return res.send(tutorRequest);
       } catch (e) {
-        console.info(`LOG_IT:: getTutorRequestWithQuery e`, e);
+        console.info(`LOG_IT:: e getTutorRequestWithQuery`, e);
+        return res
+          .status(ERROR_CODE.INTERNAL_SERVER_ERROR)
+          .json({ error: "Call Api Exception" });
       }
     });
   }
 
   private insertTutorRequest() {
     this.router.post("/tutor-request/add", async (req, res) => {
-      const tutorRequest = req.body;
-      tutorRequest.lastUpdate = new Date().getTime();
-      console.info("LOGGER:: tutorRequest", tutorRequest);
-      if (!tutorRequest) {
-        return res.send(ErrorCode.BAD_REQUEST);
+      try {
+        const tutorRequest = req.body;
+        tutorRequest.lastUpdate = new Date().getTime();
+        console.info("LOGGER:: tutorRequest", tutorRequest);
+        if (!tutorRequest) {
+          return res.send(ErrorCode.BAD_REQUEST);
+        }
+        const status =
+          await this.dataSource.tutorRequestDataSource.insertTutorRequest(
+            tutorRequest,
+          );
+        console.info("LOGGER:: insertTutorRequest", status);
+        return res.send(status);
+      } catch (e) {
+        console.info(`LOG_IT:: e insertTutorRequest`, e);
+        return res
+          .status(ERROR_CODE.INTERNAL_SERVER_ERROR)
+          .json({ error: "Call Api Exception" });
       }
-      const status =
-        await this.dataSource.tutorRequestDataSource.insertTutorRequest(
-          tutorRequest,
-        );
-      console.info("LOGGER:: insertTutorRequest", status);
-      return res.send(status);
     });
   }
 
@@ -158,39 +197,56 @@ class TutorRequestRouter {
           );
         return res.send(status);
       } catch (e) {
-        console.info(`🔥LOGGER:: error insertTutorRequestWithTutor`, e);
+        console.info(`LOG_IT:: e insertTutorRequestWithTutor`, e);
+        return res
+          .status(ERROR_CODE.INTERNAL_SERVER_ERROR)
+          .json({ error: "Call Api Exception" });
       }
     });
   }
 
   private getTutorRequestDetail() {
     this.router.get("/tutor-request/detail/:id", async (req, res) => {
-      const { id } = req.params;
-      const tutorRequest =
-        await this.dataSource.tutorRequestDataSource.getById(id);
-      if (!tutorRequest) {
+      try {
+        const { id } = req.params;
+        const tutorRequest =
+          await this.dataSource.tutorRequestDataSource.getById(id);
+        if (!tutorRequest) {
+          return res
+            .status(ERROR_CODE.NOT_FOUND)
+            .json({ error: "Not founded request" });
+        }
+        return res.send(tutorRequest);
+      } catch (e) {
+        console.info(`LOG_IT:: e getTutorRequestDetail`, e);
         return res
-          .status(ERROR_CODE.NOT_FOUND)
-          .json({ error: "Not founded request" });
+          .status(ERROR_CODE.INTERNAL_SERVER_ERROR)
+          .json({ error: "Call Api Exception" });
       }
-      return res.send(tutorRequest);
     });
   }
 
   private updateTutorRequestDetail() {
     this.router.post("/tutor-request/detail/update/:id", async (req, res) => {
-      const { id } = req.params;
-      const newData = req.body;
-      newData.lastUpdate = new Date().getTime();
-      const filter = {
-        _id: id,
-      };
-      const status =
-        await this.dataSource.tutorRequestDataSource.findAndUpdateTutorRequest(
-          filter,
-          newData,
-        );
-      return res.send(status);
+      try {
+        const { id } = req.params;
+        const newData = req.body;
+        newData.lastUpdate = new Date().getTime();
+        const filter = {
+          _id: id,
+        };
+        const status =
+          await this.dataSource.tutorRequestDataSource.findAndUpdateTutorRequest(
+            filter,
+            newData,
+          );
+        return res.send(status);
+      } catch (e) {
+        console.info(`LOG_IT:: e updateTutorRequestDetail`, e);
+        return res
+          .status(ERROR_CODE.INTERNAL_SERVER_ERROR)
+          .json({ error: "Call Api Exception" });
+      }
     });
   }
 
@@ -216,10 +272,38 @@ class TutorRequestRouter {
             );
           return res.send(response);
         } catch (e) {
-          console.info(`LOG_IT:: jobUpdateTutorRequestStatus e`, e);
+          console.info(`LOG_IT:: e updateTutorRequestDetail`, e);
+          return res
+            .status(ERROR_CODE.INTERNAL_SERVER_ERROR)
+            .json({ error: "Call Api Exception" });
         }
       },
     );
+  }
+
+  private deleteManyTutorRequest() {
+    this.router.delete("/tutor-request/delete", verifyJWT, async (req, res) => {
+      try {
+        const list = req.body;
+        const filter = {
+          _id: {
+            $in: list,
+          },
+        };
+        console.info(`LOG_IT:: filter deleteManyTutorRequest`, filter);
+        const response =
+          await this.dataSource.tutorRequestDataSource.deleteManyTutorRequest(
+            filter,
+          );
+        console.info(`LOG_IT:: response deleteManyTutorRequest`, response);
+        return res.send(response);
+      } catch (e) {
+        console.info(`LOG_IT:: e deleteManyTutorRequest`, e);
+        return res
+          .status(ERROR_CODE.INTERNAL_SERVER_ERROR)
+          .json({ error: "Call Api Exception" });
+      }
+    });
   }
 
   private insertRandomTutorRequest() {

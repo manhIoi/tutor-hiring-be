@@ -39,6 +39,7 @@ class UserRouter {
     this.approveBecomeTeacher();
     this.getListUserRequestBecomeTeacher();
     this.insertRandomUser();
+    this.deleteManyUser();
     this.rejectBecomeTeacher();
   }
 
@@ -146,6 +147,7 @@ class UserRouter {
       async (req, res) => {
         try {
           const { id } = req.params || {};
+          const { message } = req.body || {};
           const newData = await this.dataSource.userDataSource.updateUser(
             { _id: id, requestBecomeTutor: true },
             { role: Role.STUDENT, requestBecomeTutor: false },
@@ -157,9 +159,47 @@ class UserRouter {
               .json({ error: "Update profile failed" });
           }
 
+          this.service.socketService.emitEvent(
+            `become_teacher_${id}`,
+            {
+              title: "Thông báo từ admin",
+              message: `Bạn bị từ chối với lý do: ${message}`,
+              user: id,
+            },
+            true,
+          );
+
           return res.send(removeHiddenField(newData));
         } catch (e) {
           console.info(`LOG_IT:: e rejectBecomeTeacher`, e);
+          return res
+            .status(ERROR_CODE.INTERNAL_SERVER_ERROR)
+            .json({ error: "Call Api Exception" });
+        }
+      },
+    );
+  }
+
+  deleteManyUser() {
+    this.router.delete(
+      "/user/delete",
+      verifyJWT,
+      verifyRole(Role.ADMIN),
+      async (req, res) => {
+        try {
+          const list = req.body;
+          const filter = {
+            _id: {
+              $in: list,
+            },
+          };
+          console.info(`LOG_IT:: filter`, filter);
+          const response =
+            await this.dataSource.userDataSource.deleteManyUser(filter);
+          console.info(`LOG_IT:: response`, response);
+          return res.send(response);
+        } catch (e) {
+          console.info(`LOG_IT:: e deleteManyUser`, e);
           return res
             .status(ERROR_CODE.INTERNAL_SERVER_ERROR)
             .json({ error: "Call Api Exception" });

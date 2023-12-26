@@ -45,6 +45,10 @@ class UserDataSource {
   getUserBecomeTeacher() {
     return User.find({ role: Role.STUDENT, requestBecomeTutor: true });
   }
+
+  deleteManyUser(filter) {
+    return User.deleteMany(filter);
+  }
 }
 
 export default UserDataSource;

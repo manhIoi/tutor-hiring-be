@@ -29,10 +29,10 @@ class RoomChatRouter {
         const { id } = req.params || {};
         const { person } = req.body || {};
         const [roomChat] =
-          await this.dataSource.roomChatDataSource.insertRoomChatByUser(
-            id,
+          await this.dataSource.roomChatDataSource.insertRoomChatByUser([
             person,
-          );
+            id,
+          ]);
         return res.send(roomChat);
       } catch (e) {
         console.info(`LOGGER:: createRoomChat e`, e);
@@ -70,27 +70,32 @@ class RoomChatRouter {
   }
 
   private joinRoomChat() {
-    this.router.post(`/room/join/:id`, async (req, res) => {
-      const { person } = req.body || {};
-      console.info(`LOGGER:: person`, person);
-      const { id } = req.params || {};
-      const isRoomExist =
+    this.router.post(`/room/join`, async (req, res) => {
+      const list = req.body;
+      const [p1, p2] = list || [];
+      const currentRoom =
         await this.dataSource.roomChatDataSource.getRoomChatDetail({
-          persons: {
-            $in: [person],
-          },
-          user: id,
+          $and: [
+            {
+              persons: {
+                $in: [p1],
+              },
+            },
+            {
+              persons: {
+                $in: [p2],
+              },
+            },
+          ],
         });
-      if (isRoomExist) return res.send(isRoomExist);
-      console.info(`LOGGER:: create new room`);
-      const [newRoom] =
-        await this.dataSource.roomChatDataSource.insertRoomChatByUser(
-          id,
-          person,
-        );
-
-      console.info(`LOGGER:: newRoom`, newRoom);
-      return res.send(newRoom);
+      if (!currentRoom) {
+        const newRoom =
+          await this.dataSource.roomChatDataSource.insertRoomChatByUser(list);
+        console.info(`LOG_IT:: newRoom`, newRoom);
+        return res.send(newRoom);
+      }
+      console.info(`LOG_IT:: currentRoom`, currentRoom);
+      return res.send(currentRoom);
     });
   }
 }

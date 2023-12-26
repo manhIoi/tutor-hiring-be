@@ -86,8 +86,8 @@ class TutorRequestDataSource {
       .sort({ lastUpdate: -1 });
   }
 
-  deleteTutorRequest(id) {
-    // TODO: implement;
+  deleteManyTutorRequest(filter) {
+    return TutorRequest.deleteMany(filter);
   }
 }
 
