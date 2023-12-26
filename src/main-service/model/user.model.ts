@@ -26,7 +26,6 @@ const userSchema = new Schema({
   avatar: String,
   role: {
     type: String,
-    enum: Object.keys(Role),
     default: Role.STUDENT,
   },
   subjects: [{ type: Schema.Types.ObjectId, ref: "Subject" }],

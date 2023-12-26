@@ -99,35 +99,41 @@ class Authentication {
       "/user/register",
       checkDuplicateAccount,
       async (req, res) => {
-        const { fullName, phone, dob, avatar, address, password } =
-          req.body || {};
-        const userData = {
-          fullName,
-          phone,
-          dob,
-          avatar,
-          address,
-          password: await genPassword(password),
-        };
-        console.info("LOGGER:: userData", userData);
-        const [newUser] =
-          await this.dataSource.userDataSource.insertUser(userData);
-        const [newChatBot] = await this.dataSource.userDataSource.insertChatBot(
-          { user: newUser?._id },
-        );
-        console.info("LOGGER:: newUser", newUser, newChatBot);
-        if (!newUser) {
+        try {
+          const { fullName, phone, dob, avatar, address, password } =
+            req.body || {};
+          const userData = {
+            fullName,
+            phone,
+            role: "student",
+            password: await genPassword(password),
+          };
+          console.info("LOGGER:: userData", userData);
+          const [newUser] =
+            await this.dataSource.userDataSource.insertUser(userData);
+          const [newChatBot] =
+            await this.dataSource.userDataSource.insertChatBot({
+              user: newUser?._id,
+            });
+          console.info("LOGGER:: newUser", newUser, newChatBot);
+          if (!newUser) {
+            return res
+              .json(ERROR_CODE.BAD_REQUEST)
+              .json({ error: "Register failed" });
+          }
+          return res.send({
+            token: jwt
+              .sign({ phone: newUser?.phone, _id: newUser?._id }, "key")
+              .toString(),
+            user: removeHiddenField(newUser),
+            chatBot: newChatBot,
+          });
+        } catch (e) {
+          console.info(`LOG_IT:: register e`, e);
           return res
-            .json(ERROR_CODE.BAD_REQUEST)
-            .json({ error: "Register failed" });
+            .sendStatus(ERROR_CODE.BAD_REQUEST)
+            .json({ error: "Internal error" });
         }
-        return res.send({
-          token: jwt
-            .sign({ phone: newUser?.phone, _id: newUser?._id }, "key")
-            .toString(),
-          user: removeHiddenField(newUser),
-          chatBot: newChatBot,
-        });
       },
     );
   }

@@ -231,15 +231,16 @@ class TutorRequestRouter {
       try {
         const { id } = req.params;
         const newData = req.body;
-        newData.lastUpdate = new Date().getTime();
+        console.info(`LOG_IT:: newData`, newData);
         const filter = {
           _id: id,
         };
         const status =
           await this.dataSource.tutorRequestDataSource.findAndUpdateTutorRequest(
             filter,
-            newData,
+            { ...newData, lastUpdate: new Date().getTime() },
           );
+        console.info(`LOG_IT:: updateTutorRequestDetail`, status);
         return res.send(status);
       } catch (e) {
         console.info(`LOG_IT:: e updateTutorRequestDetail`, e);
