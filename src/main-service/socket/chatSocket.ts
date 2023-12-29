@@ -52,11 +52,8 @@ class ChatSocket {
           isBotMessage = false,
           roomId,
         }) => {
-          console.info("🔥LOGGER:: data ", content, idReceive, idSend);
-          console.info(`🔥🔥🔥LOGGER::  messageResponse_${idSend}`);
           const createdAt = new Date().getTime();
-          console.info(`🔥🔥🔥LOGGER:: createdAt`, createdAt);
-
+          console.log(`🔥LOG_IT:: createdAt`, createdAt, roomId)
           const executeNewMessage = isChatBot
             ? this.dataSource.chatDataSource.saveChatBotMessageByUser
             : this.dataSource.chatDataSource.saveMessage;

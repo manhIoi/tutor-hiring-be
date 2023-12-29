@@ -89,7 +89,7 @@ class RoomChatRouter {
           ],
         });
       if (!currentRoom) {
-        const newRoom =
+        const [newRoom] =
           await this.dataSource.roomChatDataSource.insertRoomChatByUser(list);
         console.info(`LOG_IT:: newRoom`, newRoom);
         return res.send(newRoom);
