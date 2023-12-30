@@ -58,6 +58,7 @@ new UploadRouter(apiRouter, {});
 new VoteRouter(apiRouter, {
   voteDataSource: new VoteDataSource(),
   userDataSource: new UserDataSource(),
+  tutorRequestDataSource: new TutorRequestDataSource()
 });
 
 new NotificationRouter(apiRouter, {

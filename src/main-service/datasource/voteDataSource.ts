@@ -1,6 +1,9 @@
 import Vote from "../model/vote.model";
 
 class VoteDataSource {
+  getAll() {
+    return Vote.find({});
+  }
   insertVote(voteData) {
     return Vote.insertMany([voteData]);
   }
@@ -14,6 +17,14 @@ class VoteDataSource {
 
   findVoteByClassDone(id, idUser) {
     return Vote.findOne({ class: id, userSend: idUser }).populate("userSend");
+  }
+
+  findVoteByQuery(filter) {
+    return Vote.find(filter).populate("userSend");
+  }
+
+  insertManyVote(data) {
+    return Vote.insertMany(data);
   }
 }
 

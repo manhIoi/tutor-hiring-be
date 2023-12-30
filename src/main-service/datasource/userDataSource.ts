@@ -39,7 +39,7 @@ class UserDataSource {
   updateUser(filter, newData) {
     return User.findOneAndUpdate(filter, newData, { new: true }).select(
       "-password",
-    );
+    ).populate("subjects");
   }
 
   getUserBecomeTeacher() {
