@@ -320,12 +320,16 @@ class TutorRequestRouter {
           const allTeacherId = allUser
             ?.filter((item) => item?.role === Role.TEACHER)
             ?.map?.((item) => ({ _id: item?._id }));
+          const allTeacherData = allUser.filter?.(item => item?.role === Role.TEACHER);
           const allSubject = await this.dataSource.subjectDataSource.getAll();
           const allSubjectId = allSubject?.map((item) => ({ _id: item?._id }));
           const lastUpdate = new Date().getTime();
           const { numberRandom } = req.params;
           const result = [];
+          const resultDeleteSubject = [];
           for (let i = 0; i < parseInt(numberRandom); i++) {
+
+            console.log(`🔥LOG_IT:: i`, i)
             const mockData = {
               title: faker.lorem.words({ min: 3, max: 7 }),
               price: faker.number.int({ min: 1000000, max: 3000000 }),
@@ -334,44 +338,56 @@ class TutorRequestRouter {
               address: faker.location.streetAddress(true),
               startAt: randomDate(new Date(2023, 4, 31), new Date(2023, 6, 30)),
               endAt: randomDate(new Date(2023, 7, 1), new Date(2023, 12, 31)),
-              status: faker.number.int({ min: 0, max: 2 }),
               timeline: faker.number.int({ min: 1, max: 3 }) * 60,
               weekDays: faker.helpers.rangeToNumber({ min: 1, max: 7 }), // 5
               isOnline: faker.datatype.boolean(),
               numOfStudents: faker.number.int({ min: 1, max: 30 }),
-              contact: faker.phone.number("0#########"),
               createdAt: new Date(),
+              subjects: faker.helpers.arrayElements(
+                allSubjectId,
+                1
+              ),
+              contact: faker.phone.number("0#########"),
+              user: faker.helpers.arrayElement(allStudentId),
+
+              status: faker.number.int({ min: 0, max: 2 }),
+
               lastUpdate: faker.number.int({
                 min: lastUpdate,
                 max: lastUpdate + faker.number.int({ min: 1000, max: 20000 }),
               }),
-              subjects: faker.helpers.arrayElements(
-                allSubjectId,
-                faker.number.int({ min: 1, max: 3 }),
-              ),
-              user: faker.helpers.arrayElement(allStudentId),
               teacher: faker.helpers.arrayElement(allTeacherId),
             };
-            const shouldHasTeacher = mockData.status !== 0;
-            const students = [mockData.user];
-            !shouldHasTeacher && delete mockData["teacher"];
-            const isWaitingTeacherApprove =
-              mockData?.teacher &&
-              mockData.numOfStudents === 1 &&
-              students?.length === 1;
-            const getStatus = () => {
-              if (mockData.endAt.getTime() <= new Date().getTime()) {
-                return 3;
-              }
-              if (isWaitingTeacherApprove) {
-                return faker.number.int({ min: 1, max: 2 });
-              }
-              return mockData?.status;
-            };
-            result.push({ ...mockData, students, status: getStatus() });
+            const _students = faker.helpers.arrayElements(allStudentId, faker.number.int({ min: 1, max: Math.max(mockData.numOfStudents - 2, 1) }),)
+            const _studentsFilter = _students.filter(item => item !== mockData.user);
+            const students = [mockData.user, ..._studentsFilter];
+            const currentTeacher = allTeacherData.find(item => item?._id === mockData.teacher?._id);
+            if (currentTeacher?.subjects.length > 0) {
+              const subject = faker.helpers.arrayElement(currentTeacher?.subjects)._id
+              mockData.subjects = [subject]
+              const shouldHasTeacher = mockData.status !== 0;
+              !shouldHasTeacher && delete mockData["teacher"];
+              const isWaitingTeacherApprove =
+                mockData?.teacher &&
+                mockData.numOfStudents === 1 &&
+                students?.length === 1;
+              const getStatus = () => {
+                if (mockData.endAt.getTime() <= new Date().getTime()) {
+                  return 3;
+                }
+                if (isWaitingTeacherApprove) {
+                  return faker.number.int({ min: 1, max: 2 });
+                }
+                return mockData?.status;
+              };
+              result.push({ ...mockData, students, status: getStatus() });
+            }
           }
 
           console.info(`LOG_IT:: result`, result);
+          console.info(`LOG_IT:: result`, resultDeleteSubject);
+
+          if (!result?.length) return;
 
           const resultImport =
             await this.dataSource.tutorRequestDataSource.insertListTutorRequest(
@@ -415,7 +431,9 @@ class TutorRequestRouter {
           //   type: Date,
           // default: randomDate(new Date(2023, 1, 1), new Date()),
           // },
-        } catch (e) {}
+        } catch (e) {
+          console.log(`🔥LOG_IT:: e`, e)
+        }
       },
     );
   }
