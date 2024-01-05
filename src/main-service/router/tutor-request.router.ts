@@ -252,9 +252,10 @@ class TutorRequestRouter {
   }
 
   private jobUpdateTutorRequestStatus() {
-    this.router.post(
+    this.router.get(
       "/tutor-request/update/check-available",
       async (req, res) => {
+        console.log(`🔥LOG_IT:: job`,);
         try {
           const currentDate = new Date();
           const filter = {
