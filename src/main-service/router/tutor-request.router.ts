@@ -254,6 +254,8 @@ class TutorRequestRouter {
   private jobUpdateTutorRequestStatus() {
     this.router.get(
       "/tutor-request/update/check-available",
+      verifyJWT,
+      verifyRole(Role.ADMIN),
       async (req, res) => {
         console.log(`🔥LOG_IT:: job`,);
         try {
