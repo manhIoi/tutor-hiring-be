@@ -32,7 +32,7 @@ class ChatSocket {
     }
   }
 
-  private buildNotificationData() {}
+  private buildNotificationData() { }
 
   initSocket() {
     dotenv.config();
@@ -52,34 +52,34 @@ class ChatSocket {
           isBotMessage = false,
           roomId,
         }) => {
-          const createdAt = new Date().getTime();
+          const createdAt = new Date();
           console.log(`🔥LOG_IT:: createdAt`, createdAt, roomId)
           const executeNewMessage = isChatBot
             ? this.dataSource.chatDataSource.saveChatBotMessageByUser
             : this.dataSource.chatDataSource.saveMessage;
           const newMessage = isChatBot
             ? {
-                chatBot: {
-                  _id: idReceive,
-                },
-                user: {
-                  _id: idSend,
-                },
-                isBotMessage,
-                content,
-                createdAt,
-              }
+              chatBot: {
+                _id: idReceive,
+              },
+              user: {
+                _id: idSend,
+              },
+              isBotMessage,
+              content,
+              createdAt,
+            }
             : {
-                userSend: {
-                  _id: idSend,
-                },
-                userReceive: {
-                  _id: idReceive,
-                },
-                content,
-                createdAt,
-                room: roomId,
-              };
+              userSend: {
+                _id: idSend,
+              },
+              userReceive: {
+                _id: idReceive,
+              },
+              content,
+              createdAt,
+              room: roomId,
+            };
           executeNewMessage(newMessage).then(async (result) => {
             console.info(`🔥🔥🔥LOGGER::  result`, result);
             if (!isChatBot) {
@@ -112,7 +112,7 @@ class ChatSocket {
                   },
                   isBotMessage: true,
                   content: botContent,
-                  createdAt: new Date().getTime(),
+                  createdAt: new Date(),
                 };
                 io.emit(`messageSendTo_${idSend}`, {
                   receive: true,
