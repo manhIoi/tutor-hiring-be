@@ -16,7 +16,7 @@ class ChatSocket {
   users: any[];
   dataSource: IDataSource;
   constructor(port: number, dataSource: IDataSource) {
-    this.io = SocketIO(port);
+    this.io = SocketIO();
     this.dataSource = dataSource;
     this.users = [];
   }
@@ -32,7 +32,7 @@ class ChatSocket {
     }
   }
 
-  private buildNotificationData() { }
+  private buildNotificationData() {}
 
   initSocket() {
     dotenv.config();
@@ -53,33 +53,33 @@ class ChatSocket {
           roomId,
         }) => {
           const createdAt = new Date();
-          console.log(`🔥LOG_IT:: createdAt`, createdAt, roomId)
+          console.log(`🔥LOG_IT:: createdAt`, createdAt, roomId);
           const executeNewMessage = isChatBot
             ? this.dataSource.chatDataSource.saveChatBotMessageByUser
             : this.dataSource.chatDataSource.saveMessage;
           const newMessage = isChatBot
             ? {
-              chatBot: {
-                _id: idReceive,
-              },
-              user: {
-                _id: idSend,
-              },
-              isBotMessage,
-              content,
-              createdAt,
-            }
+                chatBot: {
+                  _id: idReceive,
+                },
+                user: {
+                  _id: idSend,
+                },
+                isBotMessage,
+                content,
+                createdAt,
+              }
             : {
-              userSend: {
-                _id: idSend,
-              },
-              userReceive: {
-                _id: idReceive,
-              },
-              content,
-              createdAt,
-              room: roomId,
-            };
+                userSend: {
+                  _id: idSend,
+                },
+                userReceive: {
+                  _id: idReceive,
+                },
+                content,
+                createdAt,
+                room: roomId,
+              };
           executeNewMessage(newMessage).then(async (result) => {
             console.info(`🔥🔥🔥LOGGER::  result`, result);
             if (!isChatBot) {
