@@ -19,6 +19,7 @@ export default async () => {
     app.use(cors());
     app.use(express.json());
     app.use(apiRouter);
+    // init socket
     SocketIO.listen(server);
     server.listen(process.env.PORT, () => {
       console.info(`LOGGER:: start listening in port ${process.env.PORT}`);
