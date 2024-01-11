@@ -6,7 +6,6 @@ import crawlTutor from "../crawl-service/tutor";
 import * as http from "http";
 import { chatSocket } from "./socket";
 import cors from "cors";
-import SocketIO from "socket.io";
 
 dotenv.config();
 const uri = `mongodb+srv://${process.env.USER_NAME}:${process.env.PASSWORD}@cluster0.kpp4ena.mongodb.net/?retryWrites=true&w=majority`;
@@ -20,14 +19,13 @@ export default async () => {
     app.use(express.json());
     app.use(apiRouter);
     // init socket
-    SocketIO.listen(server);
+    chatSocket.initInstance(server);
+    chatSocket.initSocket();
     server.listen(process.env.PORT, () => {
       console.info(`LOGGER:: start listening in port ${process.env.PORT}`);
     });
 
     // socket service init
-
-    chatSocket.initSocket();
 
     await mongoose.connect(uri);
     await crawlData();

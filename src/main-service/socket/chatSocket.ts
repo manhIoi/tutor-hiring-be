@@ -12,11 +12,11 @@ interface IDataSource {
 }
 
 class ChatSocket {
-  io: SocketIO;
+  io: SocketIO | null;
   users: any[];
   dataSource: IDataSource;
   constructor(port: number, dataSource: IDataSource) {
-    this.io = SocketIO();
+    this.io = null;
     this.dataSource = dataSource;
     this.users = [];
   }
@@ -33,6 +33,10 @@ class ChatSocket {
   }
 
   private buildNotificationData() {}
+
+  initInstance(server) {
+    this.io = SocketIO.listen(server);
+  }
 
   initSocket() {
     dotenv.config();
