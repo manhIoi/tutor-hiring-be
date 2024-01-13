@@ -107,6 +107,7 @@ class Authentication {
             phone,
             role: "student",
             password: await genPassword(password),
+            avatar: `https://ui-avatars.com/api/?background=random&name=${fullName}`,
           };
           console.info("LOGGER:: userData", userData);
           const [newUser] =
