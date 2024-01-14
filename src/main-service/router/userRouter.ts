@@ -41,6 +41,7 @@ class UserRouter {
     this.insertRandomUser();
     this.deleteManyUser();
     this.rejectBecomeTeacher();
+    this.getDetailUser();
   }
 
   getAllUser() {
@@ -250,6 +251,21 @@ class UserRouter {
         result.push({ newUser, newChatBot });
       }
       return res.send(result);
+    });
+  }
+
+  private getDetailUser() {
+    this.router.get("/user/detail/:id", verifyJWT, async (req, res) => {
+      try {
+        const { id } = req.params || {};
+        const user = await this.dataSource.userDataSource.getUserById(id);
+        return res.send(removeHiddenField(user));
+      } catch (e) {
+        console.info(`LOG_IT:: e getDetailUser`, e);
+        return res
+          .status(ERROR_CODE.INTERNAL_SERVER_ERROR)
+          .json({ error: "Call Api Exception" });
+      }
     });
   }
 }
