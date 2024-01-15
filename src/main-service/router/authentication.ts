@@ -31,6 +31,7 @@ class Authentication {
     this.forgotPassword();
     this.verifyOtp();
     this.resetPassword();
+    this.wakeUpServer();
   }
 
   private resetPassword() {
@@ -208,6 +209,18 @@ class Authentication {
         return res
           .status(ERROR_CODE.BAD_REQUEST)
           .json({ error: "Update password fail" });
+      }
+    });
+  }
+
+  private wakeUpServer() {
+    this.router.get("/wake-up", (req, res) => {
+      try {
+        return res.send("wake-up !!!");
+      } catch (e) {
+        return res
+          .status(ERROR_CODE.BAD_REQUEST)
+          .json({ error: "wake up fail" });
       }
     });
   }
