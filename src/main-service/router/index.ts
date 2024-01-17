@@ -16,6 +16,7 @@ import VoteDataSource from "../datasource/voteDataSource";
 import NotificationRouter from "./notification.router";
 import NotificationDataSource from "../datasource/notificationDataSource";
 import { chatSocket } from "../socket";
+import SystemDataSource from "../datasource/systemDataSource";
 
 const apiRouter = express.Router();
 
@@ -49,6 +50,9 @@ new SubjectRouter(apiRouter, {
 new ChatRouter(apiRouter, {
   chatDataSource: new ChatDataSource(),
   tutorRequestDataSource: new TutorRequestDataSource(),
+  subjectDataSource: new SubjectDataSource(),
+  userDataSource: new UserDataSource(),
+  systemDataSource: new SystemDataSource(),
 });
 
 new RoomChatRouter(apiRouter, {
