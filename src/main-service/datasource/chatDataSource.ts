@@ -6,6 +6,10 @@ class ChatDataSource {
     return Chat.find({});
   }
 
+  getChatByClass(idClass) {
+    return Chat.find({ idClass });
+  }
+
   getChatByRoom(idReceive, idSend) {
     return Chat.find({
       $or: [

@@ -1,9 +1,11 @@
 import UserDataSource from "../datasource/userDataSource";
 import { IRouter } from "express";
 import RoomChatDataSource from "../datasource/roomChatDataSource";
+import TutorRequestDataSource from "../datasource/tutorRequestDataSource";
 
 type IDataSource = {
   roomChatDataSource: RoomChatDataSource;
+  tutorRequestDataSource: TutorRequestDataSource;
 };
 
 class RoomChatRouter {
@@ -21,6 +23,7 @@ class RoomChatRouter {
     this.createRoomChat();
     this.updateRoomChat();
     this.joinRoomChat();
+    this.joinRoomGroupChat();
   }
 
   private createRoomChat() {
@@ -64,6 +67,7 @@ class RoomChatRouter {
       console.info(`LOGGER:: get list room by user`);
       const listRoom =
         await this.dataSource.roomChatDataSource.getRoomChatById(id);
+      console.info(`LOG_IT:: listRoom`, listRoom);
       const listRoomFiltered = listRoom.filter((room) => !!room?.lastMessage);
       return res.send(listRoomFiltered);
     });
@@ -95,6 +99,29 @@ class RoomChatRouter {
         return res.send(newRoom);
       }
       console.info(`LOG_IT:: currentRoom`, currentRoom);
+      return res.send(currentRoom);
+    });
+  }
+
+  private joinRoomGroupChat() {
+    this.router.post(`/room/join-group/:idClass`, async (req, res) => {
+      const { idClass } = req.params;
+      const currentRoom =
+        await this.dataSource.roomChatDataSource.getRoomChatDetail({
+          idClass: idClass,
+        });
+      if (!currentRoom) {
+        const [currentClass] =
+          await this.dataSource.tutorRequestDataSource.getById(idClass);
+        const [newRoom] =
+          await this.dataSource.roomChatDataSource.insertRoomChatByClass(
+            currentClass.students,
+            idClass,
+          );
+        console.info(`LOG_IT:: newRoom`, newRoom);
+        return res.send(currentClass);
+      }
+      console.info(`LOG_IT:: currentRoom 123`, currentRoom);
       return res.send(currentRoom);
     });
   }

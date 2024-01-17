@@ -9,11 +9,21 @@ class RoomChatDataSource {
       persons: { $in: [idUser] },
     })
       .populate("persons")
-      .populate("lastMessage");
+      .populate("lastMessage")
+      .populate({
+        path: "idClass",
+        populate: {
+          path: "students",
+        },
+      });
   }
 
   insertRoomChatByUser(persons) {
     return RoomChat.insertMany([{ persons }]);
+  }
+
+  insertRoomChatByClass(persons, idClass) {
+    return RoomChat.insertMany([{ persons, idClass }]);
   }
 
   updateRoomChatByUser(filter, newData) {

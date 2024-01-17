@@ -48,17 +48,19 @@ new SubjectRouter(apiRouter, {
 });
 new ChatRouter(apiRouter, {
   chatDataSource: new ChatDataSource(),
+  tutorRequestDataSource: new TutorRequestDataSource(),
 });
 
 new RoomChatRouter(apiRouter, {
   roomChatDataSource: new RoomChatDataSource(),
+  tutorRequestDataSource: new TutorRequestDataSource(),
 });
 
 new UploadRouter(apiRouter, {});
 new VoteRouter(apiRouter, {
   voteDataSource: new VoteDataSource(),
   userDataSource: new UserDataSource(),
-  tutorRequestDataSource: new TutorRequestDataSource()
+  tutorRequestDataSource: new TutorRequestDataSource(),
 });
 
 new NotificationRouter(apiRouter, {

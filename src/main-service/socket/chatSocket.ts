@@ -55,7 +55,28 @@ class ChatSocket {
           isChatBot = false,
           isBotMessage = false,
           roomId,
+          isChatGroup = false,
+          listIdReceive = [],
+          idClass,
         }) => {
+          console.info(
+            `LOG_IT:: isChatGroup, listIdReceive`,
+            isChatGroup,
+            listIdReceive,
+          );
+          if (isChatGroup) {
+            this.handleChatGroup({
+              listIdReceive,
+              idSend,
+              roomId,
+              content,
+              io,
+              idClass,
+            });
+
+            return;
+          }
+
           const createdAt = new Date();
           console.log(`🔥LOG_IT:: createdAt`, createdAt, roomId);
           const executeNewMessage = isChatBot
@@ -187,6 +208,53 @@ class ChatSocket {
         //Sends the list of users to the client
         io.emit("newUserResponse", this.users);
         socket.disconnect();
+      });
+    });
+  }
+
+  private handleChatGroup({
+    listIdReceive,
+    idSend,
+    roomId,
+    content,
+    io,
+    idClass,
+  }) {
+    const newMessage = {
+      userSend: {
+        _id: idSend,
+      },
+      content,
+      createdAt: new Date(),
+      room: roomId,
+      idClass,
+    };
+    this.dataSource.chatDataSource.saveMessage(newMessage).then((result) => {
+      console.info(`LOG_IT:: result`, result);
+      this.dataSource.roomChatDataSource
+        .updateRoomChatByUser(
+          { _id: roomId },
+          {
+            lastMessage: result[0]._id,
+          },
+        )
+        .then((value) => {
+          console.info(`LOG_IT:: value`, value);
+        });
+    });
+    io.emit(`messageResponse_${idSend}`, {
+      receive: false,
+      content,
+      createdAt: new Date(),
+      status: true,
+    });
+    listIdReceive.forEach?.((item) => {
+      if (item === idSend) return;
+      io.emit(`messageSendTo_${item}`, {
+        receive: true,
+        content,
+        createdAt: new Date(),
+        idSend: idSend,
       });
     });
   }

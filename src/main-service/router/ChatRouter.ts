@@ -1,9 +1,11 @@
 import { IRouter } from "express";
 import ChatDataSource from "../datasource/chatDataSource";
 import ERROR_CODE from "../constant/errorCode";
+import TutorRequestDataSource from "../datasource/tutorRequestDataSource";
 
 type IDataSource = {
   chatDataSource: ChatDataSource;
+  tutorRequestDataSource: TutorRequestDataSource;
 };
 
 class ChatRouter {
@@ -17,8 +19,10 @@ class ChatRouter {
 
   registerRoutes() {
     /** registry routes */
+    this.getAllMessage();
     this.getMessagesByRoom();
     this.getListRoomByUser();
+    this.getListMessageByClass();
   }
 
   private getMessagesByRoom() {
@@ -64,6 +68,29 @@ class ChatRouter {
       } catch (e) {
         console.info(`LOGGER:: e getListRoomByUser`, e);
       }
+    });
+  }
+
+  private getListMessageByClass() {
+    this.router.post("/chat/room-class/:idClass", async (req, res) => {
+      try {
+        const { idClass } = req.params || {};
+        const [currentClass] =
+          await this.dataSource.tutorRequestDataSource.getById(idClass);
+        const { students } = currentClass || {};
+        const listMessage =
+          await this.dataSource.chatDataSource.getChatByClass(idClass);
+        return res.send(listMessage);
+      } catch (e) {}
+    });
+  }
+
+  private getAllMessage() {
+    this.router.get("/chat/all", async (req, res) => {
+      try {
+        const result = await this.dataSource.chatDataSource.getAll();
+        return res.send(result);
+      } catch (e) {}
     });
   }
 }
