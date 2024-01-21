@@ -44,18 +44,26 @@ class UploadRouter {
       "/files/images",
       upload.single("tutor_image"),
       async (req: any, res) => {
-        const { file } = req || {};
-        const data = await readFileAsync(file?.path);
-        console.info(`LOG_IT:: file`, file);
-        const storageRef = ref(storage, `files/${file.originalname}`);
-        const metadata = {
-          contentType: file.mimetype,
-        };
-        const snapshot = await uploadBytesResumable(storageRef, data, metadata);
-        console.info(`LOG_IT:: snapshot`, snapshot);
-        const downloadUrl = await getDownloadURL(snapshot.ref);
-        console.info(`LOG_IT:: downloadUrl`, downloadUrl);
-        res.send(downloadUrl);
+        try {
+          const { file } = req || {};
+          const data = await readFileAsync(file?.path);
+          console.info(`LOG_IT:: file`, file);
+          const storageRef = ref(storage, `files/${file.originalname}`);
+          const metadata = {
+            contentType: file.mimetype,
+          };
+          const snapshot = await uploadBytesResumable(
+            storageRef,
+            data,
+            metadata,
+          );
+          console.info(`LOG_IT:: snapshot`, snapshot);
+          const downloadUrl = await getDownloadURL(snapshot.ref);
+          console.info(`LOG_IT:: downloadUrl`, downloadUrl);
+          res.send(downloadUrl);
+        } catch (e) {
+          console.info(`LOG_IT:: uploadImage`, e);
+        }
       },
     );
   }

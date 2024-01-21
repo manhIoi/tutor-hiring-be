@@ -37,7 +37,8 @@ class VoteRouter {
 
   private _insertWithSocket = async (voteData) => {
     try {
-      const [newVote] = await this.dataSource.voteDataSource.insertVote(voteData);
+      const [newVote] =
+        await this.dataSource.voteDataSource.insertVote(voteData);
       const newUser = await this.dataSource.userDataSource.updateUser(
         { _id: voteData?.userReceive },
         {
@@ -59,12 +60,11 @@ class VoteRouter {
         true,
       );
       return {
-        newVote, newUser
-      }
-    } catch (error) {
-
-    }
-  }
+        newVote,
+        newUser,
+      };
+    } catch (error) {}
+  };
 
   insertVote() {
     this.router.post("/vote/add", verifyJWT, async (req, res) => {
@@ -83,12 +83,16 @@ class VoteRouter {
   }
   updateVote() {
     this.router.post("/vote/update/:id", async (req, res) => {
-      const id = req.params.id;
-      const filter = {
-        _id: id,
-      };
-      const newData = req.body;
-      return this.dataSource.voteDataSource.updateVote(filter, newData);
+      try {
+        const id = req.params.id;
+        const filter = {
+          _id: id,
+        };
+        const newData = req.body;
+        return this.dataSource.voteDataSource.updateVote(filter, newData);
+      } catch (e) {
+        console.info(`LOG_IT:: updateVote`, e);
+      }
     });
   }
 
@@ -116,8 +120,7 @@ class VoteRouter {
           await this.dataSource.voteDataSource.findVoteByClassDone(id, idUser);
         return res.send(response);
       } catch (e) {
-
-        console.log(`🔥LOG_IT:: getVoteByClassDone e`, e)
+        console.log(`🔥LOG_IT:: getVoteByClassDone e`, e);
         return res
           .status(ErrorCode.BAD_REQUEST)
           .json({ error: "Get vote failure!" });
@@ -126,23 +129,28 @@ class VoteRouter {
   }
 
   getOtherVoteByClassDone() {
-    this.router.get("/vote/class/other-vote/:id/:idUser", verifyJWT, async (req, res) => {
-      try {
-        const { id, idUser } = req.params;
-        const response =
-          await this.dataSource.voteDataSource.findVoteByQuery({
-            class: id,
-            userSend: {
-              $ne: idUser
-            }
-          });
-        return res.send(response);
-      } catch (e) {
-        return res
-          .status(ErrorCode.BAD_REQUEST)
-          .json({ error: "Get other vote failure!" });
-      }
-    });
+    this.router.get(
+      "/vote/class/other-vote/:id/:idUser",
+      verifyJWT,
+      async (req, res) => {
+        try {
+          const { id, idUser } = req.params;
+          const response = await this.dataSource.voteDataSource.findVoteByQuery(
+            {
+              class: id,
+              userSend: {
+                $ne: idUser,
+              },
+            },
+          );
+          return res.send(response);
+        } catch (e) {
+          return res
+            .status(ErrorCode.BAD_REQUEST)
+            .json({ error: "Get other vote failure!" });
+        }
+      },
+    );
   }
 
   randomVoteData() {
@@ -153,7 +161,7 @@ class VoteRouter {
         const hasUser = allUser.reduce((current, item, index) => {
           current[item?.id] = item;
           return current;
-        }, {})
+        }, {});
         const allUserId = allUser?.map((item) => ({ _id: item?._id }));
         const allStudentId = allUser
           ?.filter((item) => item?.role === Role.STUDENT)
@@ -161,15 +169,24 @@ class VoteRouter {
         const allTeacherId = allUser
           ?.filter((item) => item?.role === Role.TEACHER)
           ?.map?.((item) => ({ _id: item?._id }));
-        const allTeacherData = allUser.filter?.(item => item?.role === Role.TEACHER);
-        const allTutorRequest = await this.dataSource.tutorRequestDataSource.getAll();
-        const tutorRequestDone = allTutorRequest.filter((item) => item.status === EStatusRequest.CLASS_ENDED && item?.teacher);
+        const allTeacherData = allUser.filter?.(
+          (item) => item?.role === Role.TEACHER,
+        );
+        const allTutorRequest =
+          await this.dataSource.tutorRequestDataSource.getAll();
+        const tutorRequestDone = allTutorRequest.filter(
+          (item) => item.status === EStatusRequest.CLASS_ENDED && item?.teacher,
+        );
         const numOfVote = req.params.numOfVote;
         const result = [];
         for (let i = 0; i < parseInt(numOfVote); i++) {
           const randomClass = faker.helpers.arrayElement(tutorRequestDone);
           const randomUser = faker.helpers.arrayElement(randomClass.students);
-          const isUserVoted = allVote.some(item => item.class === randomClass._id && item.userSend === randomUser._id);
+          const isUserVoted = allVote.some(
+            (item) =>
+              item.class === randomClass._id &&
+              item.userSend === randomUser._id,
+          );
           if (!isUserVoted) {
             const newVote = {
               class: randomClass._id,
@@ -177,19 +194,19 @@ class VoteRouter {
               userReceive: randomClass.teacher._id,
               message: faker.lorem.paragraph(2),
               value: faker.number.int({ min: 1, max: 5 }),
-            }
+            };
             const data = await this._insertWithSocket(newVote);
             result.push(data);
           }
         }
         return res.send(result);
       } catch (error) {
-        console.log(`🔥LOG_IT:: error`, error)
+        console.log(`🔥LOG_IT:: error`, error);
         return res
           .status(ErrorCode.BAD_REQUEST)
           .json({ error: "Get other vote failure!" });
       }
-    })
+    });
   }
 }
 

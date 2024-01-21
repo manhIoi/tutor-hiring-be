@@ -46,39 +46,51 @@ class UserRouter {
 
   getAllUser() {
     this.router.get(`/user/all`, async (req, res) => {
-      const data = await this.dataSource.userDataSource.getAllListUser();
-      return res.send(data);
+      try {
+        const data = await this.dataSource.userDataSource.getAllListUser();
+        return res.send(data);
+      } catch (e) {
+        console.info(`LOG_IT:: getAllUser`, e);
+      }
     });
   }
   getSuggestUserByRole() {
     this.router.get(`/user/:role`, async (req, res) => {
-      const role = req.params.role;
-      const data =
-        await this.dataSource.userDataSource.getSuggestUserByRole(role);
-      const _data = data
-        .map((item: any) => {
-          const voteValue = getVoteValue(item.votes) || 0;
-          return { ...item?._doc, voteValue };
-        })
-        .sort((a, b) => b.voteValue - a.voteValue);
-      return res.send(_data);
+      try {
+        const role = req.params.role;
+        const data =
+          await this.dataSource.userDataSource.getSuggestUserByRole(role);
+        const _data = data
+          .map((item: any) => {
+            const voteValue = getVoteValue(item.votes) || 0;
+            return { ...item?._doc, voteValue };
+          })
+          .sort((a, b) => b.voteValue - a.voteValue);
+        return res.send(_data);
+      } catch (e) {
+        console.info(`LOG_IT:: getSuggestUserByRole e`, e);
+      }
     });
   }
 
   updateUser() {
     this.router.post("/user/update/:id", async (req, res) => {
-      const { id } = req.params || {};
-      const data = req.body;
-      const newData = await this.dataSource.userDataSource.updateUser(
-        { _id: id },
-        data,
-      );
-      if (!newData) {
-        return res
-          .status(ERROR_CODE.BAD_REQUEST)
-          .json({ error: "Update profile failed" });
+      try {
+        const { id } = req.params || {};
+        const data = req.body;
+        const newData = await this.dataSource.userDataSource.updateUser(
+          { _id: id },
+          data,
+        );
+        if (!newData) {
+          return res
+            .status(ERROR_CODE.BAD_REQUEST)
+            .json({ error: "Update profile failed" });
+        }
+        return res.send(removeHiddenField(newData));
+      } catch (e) {
+        console.info(`LOG_IT:: updateUser e`, e);
       }
-      return res.send(removeHiddenField(newData));
     });
   }
 

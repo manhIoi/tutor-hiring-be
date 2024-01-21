@@ -24,34 +24,44 @@ class SubjectRouter {
 
   private getAllSubject() {
     this.router.get("/subject/all", async (req, res) => {
-      const subjects = await this.dataSource.subjectDataSource.getAll();
-      if (!subjects) {
-        return res
-          .status(ERROR_CODE.NOT_FOUND)
-          .send({ error: "Get subject fail" });
+      try {
+        const subjects = await this.dataSource.subjectDataSource.getAll();
+        if (!subjects) {
+          return res
+            .status(ERROR_CODE.NOT_FOUND)
+            .send({ error: "Get subject fail" });
+        }
+        return res.send(subjects);
+      } catch (e) {
+        console.info(`LOG_IT:: getAllSubject e`, e);
       }
-      return res.send(subjects);
     });
   }
 
   private insertSubject() {
     this.router.post("/subject/add", async (req, res) => {
-      const { subject } = req.body;
-      const newSubject =
-        await this.dataSource.subjectDataSource.insertSubject(subject);
-      return res.send(newSubject);
+      try {
+        const { subject } = req.body;
+        const newSubject =
+          await this.dataSource.subjectDataSource.insertSubject(subject);
+        return res.send(newSubject);
+      } catch (e) {
+        console.info(`LOG_IT:: insertSubject e`, e);
+      }
     });
   }
 
   private deleteSubjectById() {
     this.router.post("/subject/delete/:id", async (req, res) => {
-      // TODO: implement
-      const { id } = req.params;
-      // const status = await SubjectDataSource.deleteSubject(id);
-      // if (!status) {
-      //   return res.status(201).json({ error: "Delete fail" });
-      // }
-      return res.send(null);
+      try {
+        // TODO: implement
+        const { id } = req.params;
+        // const status = await SubjectDataSource.deleteSubject(id);
+        // if (!status) {
+        //   return res.status(201).json({ error: "Delete fail" });
+        // }
+        return res.send(null);
+      } catch (e) {}
     });
   }
 }
