@@ -49,6 +49,10 @@ const tutorRequestSchema = new Schema({
     type: Number,
     default: new Date().getTime(),
   },
+  isDeleted: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const TutorRequest = mongoose.model("TutorRequest", tutorRequestSchema);

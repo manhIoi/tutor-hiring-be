@@ -19,11 +19,23 @@ class RoomChatRouter {
 
   registerRoutes() {
     /** registry routes */
+    this.getAllRoom();
     this.getListRoomByUser();
     this.createRoomChat();
     this.updateRoomChat();
     this.joinRoomChat();
     this.joinRoomGroupChat();
+  }
+
+  private getAllRoom() {
+    this.router.get("/room/all", async (req, res) => {
+      try {
+        const listRoom = await this.dataSource.roomChatDataSource.getAll();
+        return res.send(listRoom);
+      } catch (e) {
+        console.info(`LOG_IT:: getAllRoom e`, e);
+      }
+    });
   }
 
   private createRoomChat() {
@@ -63,66 +75,81 @@ class RoomChatRouter {
 
   private getListRoomByUser() {
     this.router.get("/room/:id", async (req, res) => {
-      const { id } = req.params || {};
-      console.info(`LOGGER:: get list room by user`);
-      const listRoom =
-        await this.dataSource.roomChatDataSource.getRoomChatById(id);
-      console.info(`LOG_IT:: listRoom`, listRoom);
-      const listRoomFiltered = listRoom.filter((room) => !!room?.lastMessage);
-      return res.send(listRoomFiltered);
+      try {
+        const { id } = req.params || {};
+        console.info(`LOGGER:: get list room by user`);
+        const listRoom =
+          await this.dataSource.roomChatDataSource.getRoomChatById(id);
+        console.info(`LOG_IT:: listRoom`, listRoom);
+        const listRoomFiltered = listRoom.filter((room) => !!room?.lastMessage);
+        return res.send(listRoomFiltered);
+      } catch (e) {}
     });
   }
 
   private joinRoomChat() {
     this.router.post(`/room/join`, async (req, res) => {
-      const list = req.body;
-      const [p1, p2] = list || [];
-      const currentRoom =
-        await this.dataSource.roomChatDataSource.getRoomChatDetail({
-          $and: [
-            {
-              persons: {
-                $in: [p1],
+      try {
+        const list = req.body;
+        const [p1, p2] = list || [];
+        const currentRoom =
+          await this.dataSource.roomChatDataSource.getRoomChatDetail({
+            $and: [
+              {
+                persons: {
+                  $in: [p1],
+                },
               },
-            },
-            {
-              persons: {
-                $in: [p2],
+              {
+                persons: {
+                  $in: [p2],
+                },
               },
-            },
-          ],
-        });
-      if (!currentRoom) {
-        const [newRoom] =
-          await this.dataSource.roomChatDataSource.insertRoomChatByUser(list);
-        console.info(`LOG_IT:: newRoom`, newRoom);
-        return res.send(newRoom);
-      }
-      console.info(`LOG_IT:: currentRoom`, currentRoom);
-      return res.send(currentRoom);
+            ],
+          });
+        if (!currentRoom) {
+          const [newRoom] =
+            await this.dataSource.roomChatDataSource.insertRoomChatByUser(list);
+          console.info(`LOG_IT:: newRoom`, newRoom);
+          return res.send(newRoom);
+        }
+        console.info(`LOG_IT:: currentRoom`, currentRoom);
+        return res.send(currentRoom);
+      } catch (e) {}
     });
   }
 
   private joinRoomGroupChat() {
     this.router.post(`/room/join-group/:idClass`, async (req, res) => {
-      const { idClass } = req.params;
-      const currentRoom =
-        await this.dataSource.roomChatDataSource.getRoomChatDetail({
-          idClass: idClass,
-        });
-      if (!currentRoom) {
+      try {
+        const { idClass } = req.params;
+        const currentRoom =
+          await this.dataSource.roomChatDataSource.getRoomChatDetail({
+            idClass: idClass,
+          });
         const [currentClass] =
           await this.dataSource.tutorRequestDataSource.getById(idClass);
-        const [newRoom] =
-          await this.dataSource.roomChatDataSource.insertRoomChatByClass(
-            currentClass.students,
-            idClass,
+        console.info(`LOG_IT:: currentClass`, currentClass);
+        const fullPersons = [...currentClass?.students];
+        currentClass?.teacher?._id &&
+          fullPersons.push(currentClass?.teacher?._id);
+        console.info(`LOG_IT:: fullPersons`, fullPersons);
+        if (!currentRoom) {
+          const [newRoom] =
+            await this.dataSource.roomChatDataSource.insertRoomChatByClass(
+              fullPersons,
+              idClass,
+            );
+          console.info(`LOG_IT:: newRoom`, newRoom);
+          return res.send(currentClass);
+        }
+        const newRoom =
+          await this.dataSource.roomChatDataSource.updateRoomChatByUser(
+            { _id: currentRoom._id },
+            { persons: fullPersons },
           );
-        console.info(`LOG_IT:: newRoom`, newRoom);
-        return res.send(currentClass);
-      }
-      console.info(`LOG_IT:: currentRoom 123`, currentRoom);
-      return res.send(currentRoom);
+        return res.send(newRoom);
+      } catch (e) {}
     });
   }
 }

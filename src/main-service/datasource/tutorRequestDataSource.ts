@@ -2,7 +2,11 @@ import TutorRequest, { EStatusRequest } from "../model/tutor-request.model";
 
 class TutorRequestDataSource {
   getAll() {
-    return TutorRequest.find({})
+    return TutorRequest.find({
+      isDeleted: {
+        $ne: true,
+      },
+    })
       .populate("subjects")
       .populate("user")
       .populate("teacher")
@@ -16,6 +20,9 @@ class TutorRequestDataSource {
   getAvailableByTeacherId(id) {
     return TutorRequest.find({
       status: EStatusRequest.OPEN,
+      isDeleted: {
+        $ne: true,
+      },
       teacher: {
         $ne: id,
       },
@@ -28,6 +35,9 @@ class TutorRequestDataSource {
 
   getAvailableByStudentId(id) {
     return TutorRequest.find({
+      isDeleted: {
+        $ne: true,
+      },
       user: {
         $ne: id,
       },
@@ -87,7 +97,7 @@ class TutorRequestDataSource {
   }
 
   deleteManyTutorRequest(filter) {
-    return TutorRequest.deleteMany(filter);
+    return TutorRequest.updateMany(filter, { isDeleted: true }, { new: true });
   }
 }
 

@@ -4,13 +4,22 @@ import { Role } from "../../common/model/User";
 
 class UserDataSource {
   getAllListUser() {
-    return User.find({})
+    return User.find({
+      isDeleted: {
+        $ne: true,
+      },
+    })
       .populate("subjects")
       .select("-password")
       .populate("votes");
   }
   getSuggestUserByRole(role: String) {
-    return User.find({ role })
+    return User.find({
+      role,
+      isDeleted: {
+        $ne: true,
+      },
+    })
       .populate("subjects")
       .select("-password")
       .populate("votes");
@@ -37,9 +46,9 @@ class UserDataSource {
   }
 
   updateUser(filter, newData) {
-    return User.findOneAndUpdate(filter, newData, { new: true }).select(
-      "-password",
-    ).populate("subjects");
+    return User.findOneAndUpdate(filter, newData, { new: true })
+      .select("-password")
+      .populate("subjects");
   }
 
   getUserBecomeTeacher() {
@@ -47,7 +56,7 @@ class UserDataSource {
   }
 
   deleteManyUser(filter) {
-    return User.deleteMany(filter);
+    return User.updateMany(filter, { isDeleted: true }, { new: true });
   }
 }
 

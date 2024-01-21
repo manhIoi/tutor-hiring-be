@@ -7,7 +7,7 @@ import { faker } from "@faker-js/faker";
 import { randomDate } from "../utils/date.util";
 import { EStatusRequest } from "../model/tutor-request.model";
 import SubjectDataSource from "../datasource/subjectDataSource";
-import { isFullStudent } from "../utils/tutor-request.util";
+import { isFullStudent, isUserInClass } from "../utils/tutor-request.util";
 import { verifyJWT, verifyRole } from "../common/middleware";
 import { Role } from "../../common/model/User";
 import ChatSocket from "../socket/chatSocket";
@@ -89,8 +89,9 @@ class TutorRequestRouter {
           await this.dataSource.tutorRequestDataSource.getAvailableByStudentId(
             currentUser._id,
           );
+        const studentId: any = req.params.id;
         const tutorRequestFilter = tutorRequests.filter(
-          (item) => !isFullStudent(item),
+          (item) => !isFullStudent(item) && !isUserInClass(item, studentId),
         );
         return res.send(tutorRequestFilter);
       } catch (e) {
@@ -257,7 +258,7 @@ class TutorRequestRouter {
       verifyJWT,
       verifyRole(Role.ADMIN),
       async (req, res) => {
-        console.log(`🔥LOG_IT:: job`,);
+        console.log(`🔥LOG_IT:: job`);
         try {
           const currentDate = new Date();
           const filter = {
@@ -323,7 +324,9 @@ class TutorRequestRouter {
           const allTeacherId = allUser
             ?.filter((item) => item?.role === Role.TEACHER)
             ?.map?.((item) => ({ _id: item?._id }));
-          const allTeacherData = allUser.filter?.(item => item?.role === Role.TEACHER);
+          const allTeacherData = allUser.filter?.(
+            (item) => item?.role === Role.TEACHER,
+          );
           const allSubject = await this.dataSource.subjectDataSource.getAll();
           const allSubjectId = allSubject?.map((item) => ({ _id: item?._id }));
           const lastUpdate = new Date().getTime();
@@ -331,8 +334,7 @@ class TutorRequestRouter {
           const result = [];
           const resultDeleteSubject = [];
           for (let i = 0; i < parseInt(numberRandom); i++) {
-
-            console.log(`🔥LOG_IT:: i`, i)
+            console.log(`🔥LOG_IT:: i`, i);
             const mockData = {
               title: faker.lorem.words({ min: 3, max: 7 }),
               price: faker.number.int({ min: 1000000, max: 3000000 }),
@@ -346,10 +348,7 @@ class TutorRequestRouter {
               isOnline: faker.datatype.boolean(),
               numOfStudents: faker.number.int({ min: 1, max: 30 }),
               createdAt: new Date(),
-              subjects: faker.helpers.arrayElements(
-                allSubjectId,
-                1
-              ),
+              subjects: faker.helpers.arrayElements(allSubjectId, 1),
               contact: faker.phone.number("0#########"),
               user: faker.helpers.arrayElement(allStudentId),
 
@@ -361,13 +360,25 @@ class TutorRequestRouter {
               }),
               teacher: faker.helpers.arrayElement(allTeacherId),
             };
-            const _students = faker.helpers.arrayElements(allStudentId, faker.number.int({ min: 1, max: Math.max(mockData.numOfStudents - 2, 1) }),)
-            const _studentsFilter = _students.filter(item => item !== mockData.user);
+            const _students = faker.helpers.arrayElements(
+              allStudentId,
+              faker.number.int({
+                min: 1,
+                max: Math.max(mockData.numOfStudents - 2, 1),
+              }),
+            );
+            const _studentsFilter = _students.filter(
+              (item) => item !== mockData.user,
+            );
             const students = [mockData.user, ..._studentsFilter];
-            const currentTeacher = allTeacherData.find(item => item?._id === mockData.teacher?._id);
+            const currentTeacher = allTeacherData.find(
+              (item) => item?._id === mockData.teacher?._id,
+            );
             if (currentTeacher?.subjects.length > 0) {
-              const subject = faker.helpers.arrayElement(currentTeacher?.subjects)._id
-              mockData.subjects = [subject]
+              const subject = faker.helpers.arrayElement(
+                currentTeacher?.subjects,
+              )._id;
+              mockData.subjects = [subject];
               const shouldHasTeacher = mockData.status !== 0;
               !shouldHasTeacher && delete mockData["teacher"];
               const isWaitingTeacherApprove =
@@ -435,7 +446,7 @@ class TutorRequestRouter {
           // default: randomDate(new Date(2023, 1, 1), new Date()),
           // },
         } catch (e) {
-          console.log(`🔥LOG_IT:: e`, e)
+          console.log(`🔥LOG_IT:: e`, e);
         }
       },
     );
