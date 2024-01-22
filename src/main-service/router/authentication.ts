@@ -60,7 +60,7 @@ class Authentication {
         console.info("LOGGER:: phone, password", phone, password);
         const user = await this.dataSource.userDataSource.getUserByPhone(phone);
         console.info("LOGGER:: user", user);
-        if (isEmpty(user)) {
+        if (isEmpty(user) || user?.isDeleted === true) {
           return res.json({
             error: "Không tìm thấy người dùng. Vui lòng kiểm tra lại",
           });
