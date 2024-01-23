@@ -62,6 +62,9 @@ class TutorRequestDataSource {
   getByUserId(id) {
     return TutorRequest.find({
       $or: [{ user: id }, { students: id }],
+      isDeleted: {
+        $ne: true,
+      },
     })
       .populate("subjects")
       .populate("user")
@@ -89,6 +92,9 @@ class TutorRequestDataSource {
   getByTeacherId(id) {
     return TutorRequest.find({
       teacher: id,
+      isDeleted: {
+        $ne: true,
+      },
     })
       .populate("subjects")
       .populate("user")
